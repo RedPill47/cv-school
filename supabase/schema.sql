@@ -143,7 +143,10 @@ begin
   perform _check_teacher(p_secret);
   if p_code is null or p_code = '*' then delete from dossiers;
   else delete from dossiers where code = _norm_code(p_code); end if;
-  get diagnostics n = row_count; return n;
+  get diagnostics n = row_count;
+  -- Klassen ohne Schüler verschwinden samt ihren Kapitel-Einstellungen.
+  delete from chapter_locks c where not exists (select 1 from dossiers d where d.klasse = c.klasse);
+  return n;
 end $$;
 
 -- ---------- Wartung (täglich von GitHub Actions aufgerufen) ----------
@@ -155,6 +158,7 @@ declare n integer;
 begin
   delete from dossiers where expires_at <= now();
   get diagnostics n = row_count;
+  delete from chapter_locks c where not exists (select 1 from dossiers d where d.klasse = c.klasse);
   return json_build_object('deleted', n, 'active', (select count(*) from dossiers));
 end $$;
 
