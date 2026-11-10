@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mon CV – Schülerdossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ef; --card:#fff; --ink:#1f2a33; --muted:#5d6b75; --line:#e3ded4;
+  --accent:#0f766e; --accent-soft:#d9f0ec; --warn:#b45309; --warn-soft:#fdf0dc;
+  --bad:#b42318; --bad-soft:#fde4e1; --good:#15803d; --good-soft:#dcf3e2;
+  --c1:#2563eb; --c2:#7c3aed; --c3:#db2777; --c4:#ea580c; --c5:#0891b2; --c6:#65a30d; --c7:#78716c;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;font-size:16px}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;padding:12px 16px 6px;max-width:1100px;margin:0 auto}
+.brand .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800}
+.brand h1{font-size:18px;margin:0;font-weight:800}
+.brand small{color:var(--muted);font-weight:600}
+nav.chapters{display:flex;gap:6px;overflow-x:auto;padding:6px 16px 10px;max-width:1100px;margin:0 auto;scrollbar-width:thin}
+nav.chapters a{flex:0 0 auto;text-decoration:none;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:700;white-space:nowrap}
+nav.chapters a .wk{color:var(--muted);font-weight:600;margin-right:4px}
+nav.chapters a.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+nav.chapters a.active .wk{color:#cdeee9}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 80px}
+section.chap{display:none}
+section.chap.active{display:block}
+.kicker{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-size:28px;line-height:1.2;margin:4px 0 8px}
+h3{font-size:19px;margin:22px 0 8px}
+p.lead{font-size:17px;color:var(--muted);margin:0 0 16px;max-width:70ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.task{border-left:5px solid var(--accent)}
+.task .tlabel{font-weight:800;color:var(--accent);font-size:14px;margin-bottom:4px}
+.btn{font:inherit;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;min-height:40px}
+.btn.ghost{background:#fff;color:var(--accent)}
+.btn.small{padding:4px 10px;min-height:32px;font-size:14px}
+.btn.danger{background:#fff;color:var(--bad);border-color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.fb{margin-top:10px;padding:10px 12px;border-radius:10px;font-weight:700;display:none}
+.fb.show{display:block}
+.fb.good{background:var(--good-soft);color:var(--good)}
+.fb.bad{background:var(--bad-soft);color:var(--bad)}
+.fb.info{background:var(--accent-soft);color:var(--accent)}
+input[type=text],input[type=email],input[type=tel],select,textarea{font:inherit;font-size:16px;border:1px solid #cfc8bb;border-radius:9px;padding:8px 10px;background:#fff;color:var(--ink);width:100%}
+textarea{min-height:70px;resize:vertical}
+label.f{display:block;font-weight:700;font-size:14px;margin:8px 0 3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:720px){.grid2,.grid3{grid-template-columns:1fr}h2{font-size:23px}}
+.gap{display:inline-block;width:auto;min-width:130px;padding:3px 6px;margin:2px 2px;font-weight:700}
+.gap.ok{border-color:var(--good);background:var(--good-soft)}
+.gap.no{border-color:var(--bad);background:var(--bad-soft)}
+.cloze{font-size:18px;line-height:2.2}
+
+/* sort game */
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:48px;padding:10px;border:2px dashed var(--line);border-radius:12px;background:#fbfaf7}
+.chip{font:inherit;font-size:14px;font-weight:700;padding:7px 11px;border-radius:9px;border:1px solid #cfc8bb;background:#fff;cursor:pointer;color:var(--ink)}
+.chip.sel{outline:3px solid var(--accent);outline-offset:1px}
+.chip.ok{background:var(--good-soft);border-color:var(--good)}
+.chip.no{background:var(--bad-soft);border-color:var(--bad)}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.buckets{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:12px}
+.bucket{border:2px solid var(--line);border-radius:12px;padding:8px;min-height:90px;background:#fff;cursor:pointer}
+.bucket h4{margin:0 0 6px;font-size:14px}
+.bucket .items{display:flex;flex-direction:column;gap:6px}
+.bucket.hot{border-color:var(--accent);background:var(--accent-soft)}
+
+/* quiz */
+.q{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.q:last-child{border-bottom:0}
+.q .txt{flex:1 1 300px;font-weight:600}
+.q .why{flex-basis:100%;font-size:14px;color:var(--muted);display:none}
+.q.done .why{display:block}
+.tf{display:flex;gap:6px}
+.tf button{font:inherit;font-weight:800;border-radius:9px;border:1px solid #cfc8bb;background:#fff;padding:6px 12px;cursor:pointer;min-width:84px}
+.tf button.ok{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.tf button.no{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+
+/* rules */
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;counter-reset:r}
+.rule{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 12px 12px 48px;position:relative;font-weight:600}
+.rule::before{counter-increment:r;content:counter(r);position:absolute;left:12px;top:11px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+.rule small{display:block;color:var(--muted);font-weight:600;margin-top:3px}
+
+/* CV sheet */
+.sheetwrap{background:#e9e5dc;border-radius:14px;padding:14px;overflow:hidden}
+.sheetscale{transform-origin:top left}
+.sheet{width:794px;min-height:1123px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12);display:grid;grid-template-columns:250px 1fr;font-family:"Source Sans 3",Arial,sans-serif;color:#1d1d1d;font-size:14.5px;line-height:1.4}
+.sheet .side{background:#eef1f3;padding:34px 22px;}
+.sheet .mainc{padding:34px 34px}
+.sheet .photo{width:132px;height:170px;border:1px solid #c9d0d5;background:#fff;margin:0 auto 18px;display:grid;place-items:center;text-align:center;color:#7a8790;font-size:12px;overflow:hidden;padding:6px}
+.sheet .photo img{width:100%;height:100%;object-fit:cover}
+.sheet .name{font-size:21px;font-weight:700;margin:0 0 10px;line-height:1.2}
+.sheet .side p{margin:0 0 3px}
+.sheet .side .sp{height:10px}
+.sheet .title{font-size:26px;font-weight:700;margin:0 0 16px;color:#0f766e}
+.sheet .sec{margin:0 0 14px}
+.sheet .sec h5{font-size:15px;margin:0 0 6px;padding-bottom:3px;border-bottom:2px solid #0f766e;color:#0f766e;text-transform:none}
+.sheet .ent{display:grid;grid-template-columns:150px 1fr;gap:8px;margin-bottom:5px}
+.sheet .ent .d{font-weight:600}
+.sheet ul{margin:0;padding-left:18px}
+.sheet li{margin:0 0 2px}
+.sheet .muted{color:#9aa4ab;font-style:italic}
+/* rubric colors on model CV */
+.colorize .sec[data-r="etudes"] h5{color:var(--c1);border-color:var(--c1)}
+.colorize .sec[data-r="exp"] h5{color:var(--c2);border-color:var(--c2)}
+.colorize .sec[data-r="comp"] h5{color:var(--c3);border-color:var(--c3)}
+.colorize .sec[data-r="lang"] h5{color:var(--c4);border-color:var(--c4)}
+.colorize .sec[data-r="info"] h5{color:var(--c5);border-color:var(--c5)}
+.colorize .sec[data-r="div"] h5{color:var(--c6);border-color:var(--c6)}
+.colorize .side{outline:3px solid var(--c7);outline-offset:-3px}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.legend span{font-size:13px;font-weight:800;padding:3px 9px;border-radius:999px;color:#fff}
+
+/* hunt */
+.hunt .l{cursor:pointer;border-radius:4px;padding:0 3px;margin:0 -3px;transition:background .15s}
+.hunt .l:hover{background:#fff3c4}
+.hunt .l.found{background:var(--bad-soft);outline:2px solid var(--bad);color:var(--bad)}
+.hunt .l.fine{background:#eef4f1}
+.hunt .l.reveal{background:#fff3c4;outline:2px dashed var(--warn)}
+.counter{font-size:22px;font-weight:800;color:var(--accent)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tabs button{font:inherit;font-weight:800;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;max-width:92vw;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+table.ct{width:100%;border-collapse:collapse;font-size:14px}
+table.ct th,table.ct td{border:1px solid var(--line);padding:5px;vertical-align:top}
+table.ct th{background:#f1ede5;text-align:left}
+table.ct td.n{width:30px;text-align:center;font-weight:800}
+table.ct input{border:0;padding:4px;border-radius:4px}
+.sol{display:none;margin-top:10px}
+.sol.show{display:block}
+.sol ol{margin:0;padding-left:22px}
+.sol li{margin-bottom:4px}
+
+/* builder */
+.builder{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:980px){.builder{grid-template-columns:1fr}}
+.builder .preview{position:sticky;top:110px}
+@media (max-width:980px){.builder .preview{position:static}}
+fieldset{border:1px solid var(--line);border-radius:12px;padding:10px 12px 12px;margin:0 0 12px;background:#fff}
+legend{font-weight:800;padding:0 6px}
+.lrow{display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;margin-bottom:6px;align-items:center}
+.lrow.two{grid-template-columns:1fr 1fr auto}
+.x{border:0;background:#f3efe8;border-radius:8px;width:34px;height:34px;cursor:pointer;font-weight:800;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted)}
+.checks{list-style:none;padding:0;margin:0}
+.checks li{padding:6px 8px;border-radius:8px;margin-bottom:5px;font-weight:600;font-size:14px}
+.checks li.ok{background:var(--good-soft);color:var(--good)}
+.checks li.w{background:var(--warn-soft);color:var(--warn)}
+.switch{display:flex;align-items:center;gap:8px;font-weight:700;cursor:pointer}
+.switch input{width:20px;height:20px}
+
+/* checklist */
+.cl label{display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:9px;cursor:pointer;font-weight:600}
+.cl label:hover{background:#f6f3ec}
+.cl input{width:20px;height:20px;margin-top:2px;flex:0 0 auto}
+
+/* timer */
+.timer{font-size:56px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent);line-height:1}
+.timer.end{color:var(--bad)}
+.bar{height:10px;background:#ece7dd;border-radius:999px;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;background:var(--accent);width:0}
+
+/* puzzle */
+.pz{list-style:none;padding:0;margin:0}
+.pz li{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-weight:600}
+.pz li .n{width:28px;height:28px;border-radius:50%;background:#ece7dd;display:grid;place-items:center;font-weight:800;flex:0 0 auto}
+.pz li .t{flex:1}
+.pz li.ok{border-color:var(--good);background:var(--good-soft)}
+.pz li.no{border-color:var(--bad);background:var(--bad-soft)}
+.pz button{border:1px solid var(--line);background:#fff;border-radius:8px;width:36px;height:34px;cursor:pointer;font-weight:800}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:720px){.vs{grid-template-columns:1fr}}
+.vs .card h4{margin:0 0 6px;font-size:18px}
+.letter{font-family:"Source Sans 3",Arial,sans-serif;background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px;font-size:15px;max-width:640px}
+.letter .r{text-align:right}
+.footer-nav{display:flex;justify-content:space-between;margin-top:24px;gap:10px}
+#pdfStage{position:fixed;left:-20000px;top:0}
+/* login + sync */
+.login{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;padding:16px;overflow:auto}
+.login .card{width:100%;max-width:420px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;z-index:110;padding:16px}
+.brand .acct{margin-left:auto;display:none;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.acct .who{font-weight:800;font-size:14px}
+.sync{font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;background:#ece7dd;color:var(--muted);white-space:nowrap}
+.sync.ok{background:var(--good-soft);color:var(--good)}
+.sync.busy{background:var(--warn-soft);color:var(--warn)}
+.sync.bad{background:var(--bad-soft);color:var(--bad)}
+@media (max-width:600px){.acct .who{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="logo">CV</div><div><h1>Mon CV – Schülerdossier</h1><small>Dein Arbeitsheft für 4 Wochen</small></div><div class="acct" id="acct"><span class="who" id="who"></span><span class="sync" id="syncState">…</span><button class="btn ghost small" id="logoutBtn">Abmelden</button></div></div>
+  <nav class="chapters" id="nav"></nav>
+</header>
+
+<main id="main">
+
+<!-- K1 -->
+<section class="chap" id="c-k1">
+  <div class="kicker">Woche 1 · Kapitel 1</div>
+  <h2>Was ist ein CV?</h2>
+  <p class="lead">Ein CV ist deine Visitenkarte auf Papier. Ein Chef liest ihn nur kurz. In dieser kurzen Zeit muss er sehen: Diese Person will ich kennenlernen!</p>
+  <div class="card">
+    <h3 style="margin-top:0">Das Wichtigste in 3 Sätzen</h3>
+    <ul>
+      <li><b>CV</b> heißt <i>Curriculum Vitae</i>. Auf Deutsch: Lebenslauf.</li>
+      <li>Er zeigt, <b>wer du bist</b>, <b>was du gelernt hast</b> und <b>was du kannst</b>.</li>
+      <li>Das Ziel: Du wirst zu einem <b>Gespräch</b> oder einem <b>Praktikum</b> eingeladen.</li>
+    </ul>
+  </div>
+  <div class="card task">
+    <div class="tlabel">Aufgabe 1 · Lückentext</div>
+    <p style="margin-top:0">Wähle das richtige Wort aus.</p>
+    <div class="cloze" id="cloze"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="clozeCheck">Kontrollieren</button><button class="btn ghost" id="clozeReset">Neu</button></div>
+    <div class="fb" id="clozeFb"></div>
+  </div>
+  <div class="card task">
+    <div class="tlabel">Aufgabe 2 · Nachdenken</div>
+    <label class="f" for="k1why">Wofür brauchst du bald einen CV? (Praktikum, Lehrstelle, Ferienjob …)</label>
+    <textarea id="k1why" data-save="k1why" placeholder="Ich brauche einen CV für …"></textarea>
+  </div>
+</section>
+
+<!-- K2 -->
+<section class="chap" id="c-k2">
+  <div class="kicker">Woche 1 · Kapitel 2</div>
+  <h2>Wie ist ein CV aufgebaut?</h2>
+  <p class="lead">Ein CV hat 7 Rubriken. Die Titel schreibst du auf Französisch. Schau dir den CV von Lisa an: Jede Farbe ist eine Rubrik.</p>
+  <div class="legend">
+    <span style="background:var(--c7)">1 Coordonnées personnelles</span>
+    <span style="background:var(--c1)">2 Études et formations</span>
+    <span style="background:var(--c2)">3 Expériences professionnelles</span>
+    <span style="background:var(--c3)">4 Compétences</span>
+    <span style="background:var(--c4)">5 Connaissances linguistiques</span>
+    <span style="background:var(--c5)">6 Connaissances informatiques</span>
+    <span style="background:var(--c6)">7 Divers</span>
+  </div>
+  <div class="sheetwrap"><div class="sheetscale colorize" data-fit id="modelCV"></div></div>
+  <div class="card task">
+    <div class="tlabel">Aufgabe 3 · Sortierspiel</div>
+    <p style="margin-top:0">Tippe zuerst eine Info an, dann die richtige Rubrik. Zum Zurücklegen tippst du die Info in der Rubrik noch einmal an.</p>
+    <div class="pool" id="pool"></div>
+    <div class="buckets" id="buckets"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="sortCheck">Kontrollieren</button><button class="btn ghost" id="sortReset">Neu mischen</button></div>
+    <div class="fb" id="sortFb"></div>
+  </div>
+</section>
+
+<!-- K3 -->
+<section class="chap" id="c-k3">
+  <div class="kicker">Woche 1 · Kapitel 3</div>
+  <h2>Worauf muss ich achten?</h2>
+  <p class="lead">Diese 10 goldenen Regeln machen deinen CV professionell.</p>
+  <div class="rules">
+    <div class="rule">Das Neueste kommt zuerst.<small>Anti-chronologisch: 2025 vor 2019.</small></div>
+    <div class="rule">Erst Vorname, dann NACHNAME.<small>Lisa MUSTERMANN</small></div>
+    <div class="rule">Seriöse E-Mail-Adresse.<small>lisa.mustermann@… statt prinzessin2010@…</small></div>
+    <div class="rule">Passfoto, kein Selfie.<small>35 × 45 mm, neutraler Hintergrund.</small></div>
+    <div class="rule">Ehrlich bleiben.<small>Nie etwas erfinden.</small></div>
+    <div class="rule">Sprachen mit Niveau.<small>langue maternelle · très bonnes · bonnes · connaissances de base</small></div>
+    <div class="rule">Nie angeben:<small>Sozialversicherungsnummer, Namen und Berufe der Eltern.</small></div>
+    <div class="rule">Keine Religion, keine Politik.<small>Gehört nicht unter Divers.</small></div>
+    <div class="rule">2 bis 4 Hobbys.<small>Nicht zu viele, und nichts Peinliches.</small></div>
+    <div class="rule">Sauber und übersichtlich.<small>1 Seite, keine Fehler, keine unbekannten Abkürzungen.</small></div>
+  </div>
+  <div class="card task">
+    <div class="tlabel">Aufgabe 4 · Richtig oder falsch?</div>
+    <div id="quiz"></div>
+    <div class="fb" id="quizFb"></div>
+    <button class="btn ghost small" id="quizReset" style="margin-top:8px">Quiz neu starten</button>
+  </div>
+  <div class="card task">
+    <div class="tlabel">Exit-Ticket 3 – 2 – 1</div>
+    <label class="f">3 Rubriken, die in jeden CV gehören</label><input type="text" data-save="ex3">
+    <label class="f">2 Regeln, die ich mir merke</label><input type="text" data-save="ex2">
+    <label class="f">1 Frage, die ich noch habe</label><input type="text" data-save="ex1">
+  </div>
+</section>
+
+<!-- K4 -->
+<section class="chap" id="c-k4">
+  <div class="kicker">Woche 2 · Kapitel 4</div>
+  <h2>Fehlerjagd</h2>
+  <p class="lead">Ihr seid die Personalabteilung. Diese CVs sind voller Fehler. Tippt auf jede Zeile, die falsch ist. Findet ihr alle?</p>
+  <div class="tabs" id="huntTabs"></div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div><span class="counter" id="huntCount">0 / 0</span> <span class="hint">Fehler gefunden</span></div>
+      <div class="row">
+        <button class="btn ghost small" id="missBtn" style="display:none">Es fehlt eine Rubrik!</button>
+        <button class="btn ghost small" id="huntPdf">Diesen CV als PDF</button>
+        <button class="btn ghost small" id="huntReset">Neu</button>
+        <button class="btn ghost small" id="huntSol">Lösung zeigen</button>
+      </div>
+    </div>
+    <div class="fb" id="huntFb"></div>
+    <div id="missBox" class="card" style="display:none;margin-bottom:0">
+      <b>Welche Rubrik fehlt in diesem CV?</b>
+      <div class="row" id="missOpts" style="margin-top:8px"></div>
+    </div>
+  </div>
+  <div class="sheetwrap"><div class="sheetscale hunt" data-fit id="huntCV"></div></div>
+  <div class="sol card" id="huntSolBox"><h3 style="margin-top:0">Lösung</h3><ol id="huntSolList"></ol></div>
+  <div class="card task">
+    <div class="tlabel">Aufgabe 5 · Korrekturtabelle</div>
+    <p style="margin-top:0">Schreibt jeden Fehler auf: Was ist falsch? Warum? Wie wäre es richtig?</p>
+    <div style="overflow-x:auto"><table class="ct" id="ctable"></table></div>
+  </div>
+  <div class="card task">
+    <div class="tlabel">Sicherung · Meine Top 5</div>
+    <p style="margin-top:0">5 Fehler, die ich in meinem CV <b>nie</b> machen werde:</p>
+    <div id="top5"></div>
+  </div>
+</section>
+
+<!-- K5 -->
+<section class="chap" id="c-k5">
+  <div class="kicker">Hausaufgabe für Woche 3 · Kapitel 5</div>
+  <h2>Meine Daten sammeln</h2>
+  <p class="lead">Bevor du deinen CV schreibst, brauchst du alle Infos. Frag zu Hause nach oder schau in deine Praktikumsbescheinigungen.</p>
+  <div class="card cl" id="collect"></div>
+  <div class="card task">
+    <div class="tlabel">Notizen</div>
+    <label class="f">Meine Schulen (Jahre, Name, Klasse)</label><textarea data-save="n_schulen" placeholder="2024 – 2025 : Lycée …, 5e …"></textarea>
+    <label class="f">Meine Stages (genaues Datum, Firma, was habe ich gemacht?)</label><textarea data-save="n_stages" placeholder="17.03.25 – 21.03.25 : …"></textarea>
+    <label class="f">Meine Stärken (schau in die Liste im Kapitel 6)</label><textarea data-save="n_staerken"></textarea>
+  </div>
+</section>
+
+<!-- K6 -->
+<section class="chap" id="c-k6">
+  <div class="kicker">Woche 3 · Kapitel 6</div>
+  <h2>Mein CV</h2>
+  <p class="lead">Fülle die Felder aus. Rechts siehst du sofort deinen CV. Der Assistent zeigt dir, was noch fehlt. Alles wird automatisch online gespeichert.</p>
+  <div class="row" style="margin-bottom:12px">
+    <button class="btn" id="pdfBtn">Als PDF herunterladen</button>
+    <label class="switch"><input type="checkbox" id="hideContact"> Kontaktdaten verbergen (für die Präsentation)</label>
+    <button class="btn ghost small" id="loadEx">Beispiel von Lisa laden</button>
+    <button class="btn danger small" id="clearCv">Alles löschen</button>
+  </div>
+  <div class="fb" id="pdfFb"></div>
+  <div class="builder">
+    <div id="form">
+      <fieldset><legend>1 · Coordonnées personnelles</legend>
+        <div class="grid2">
+          <div><label class="f">Prénom (Vorname)</label><input type="text" data-cv="prenom"></div>
+          <div><label class="f">NOM (Nachname)</label><input type="text" data-cv="nom"></div>
+        </div>
+        <label class="f">Rue et numéro</label><input type="text" data-cv="rue" placeholder="12, rue des Fleurs">
+        <label class="f">Code postal et localité</label><input type="text" data-cv="cp" placeholder="L-3568 Dudelange">
+        <div class="grid2">
+          <div><label class="f">Tél. (GSM)</label><input type="tel" data-cv="tel" placeholder="691 000 000"></div>
+          <div><label class="f">E-mail</label><input type="email" data-cv="email" placeholder="prenom.nom@…"></div>
+        </div>
+        <div class="grid2">
+          <div><label class="f">Date de naissance</label><input type="text" data-cv="naissance" placeholder="03.05.2010"></div>
+          <div><label class="f">Lieu de naissance</label><input type="text" data-cv="lieu"></div>
+        </div>
+        <div class="grid3">
+          <div><label class="f">Nationalité</label><input type="text" data-cv="nationalite" placeholder="luxembourgeoise"></div>
+          <div><label class="f">État civil</label><select data-cv="etat"><option>célibataire</option><option></option></select></div>
+          <div><label class="f">Permis de conduire</label><input type="text" data-cv="permis" placeholder="/"></div>
+        </div>
+        <label class="f">Photo (freiwillig, nur Passfoto)</label>
+        <div class="row"><input type="file" accept="image/*" id="photoIn" style="max-width:260px"><button class="btn ghost small" id="photoDel" type="button">Foto entfernen</button></div>
+      </fieldset>
+      <fieldset><legend>2 · Études et formations</legend>
+        <p class="hint" style="margin-top:0">Das Neueste zuerst! Beispiel: 2024 – 2025 · Lycée Bel-Val · 5e de la voie de préparation</p>
+        <div id="etudesList"></div>
+        <button class="btn ghost small" type="button" data-add="etudes">+ Zeile</button>
+      </fieldset>
+      <fieldset><legend>3 · Expériences professionnelles (Stages)</legend>
+        <p class="hint" style="margin-top:0">Das Neueste zuerst! Beispiel: 17.03.25 – 21.03.25 · Zeeman, Dudelange · Commise de vente</p>
+        <div id="expList"></div>
+        <button class="btn ghost small" type="button" data-add="exp">+ Zeile</button>
+      </fieldset>
+      <fieldset><legend>4 · Compétences professionnelles et personnelles</legend>
+        <p class="hint" style="margin-top:0">Tippe 3 bis 5 Stärken an, die wirklich zu dir passen.</p>
+        <div class="row" id="compChips"></div>
+        <div class="row" style="margin-top:8px"><input type="text" id="compOwn" placeholder="Eigene Stärke …" style="flex:1"><button class="btn ghost small" type="button" id="compAdd">Hinzufügen</button></div>
+      </fieldset>
+      <fieldset><legend>5 · Connaissances linguistiques</legend>
+        <div id="langList"></div>
+        <button class="btn ghost small" type="button" data-add="lang">+ Sprache</button>
+      </fieldset>
+      <fieldset><legend>6 · Connaissances informatiques</legend>
+        <div class="row" id="infoChips"></div>
+      </fieldset>
+      <fieldset><legend>7 · Divers</legend>
+        <label class="f">Loisirs (2 bis 4, mit Komma getrennt)</label><input type="text" data-cv="loisirs" placeholder="natation, dessin, football">
+        <label class="f">Autres (z. B. Premiers secours, Vereinsarbeit)</label><input type="text" data-cv="autres">
+      </fieldset>
+    </div>
+    <div class="preview">
+      <div class="card" style="margin-top:0">
+        <b>Assistent</b>
+        <ul class="checks" id="checks" style="margin-top:8px"></ul>
+      </div>
+      <div class="sheetwrap"><div class="sheetscale" data-fit id="myCV"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- K7 -->
+<section class="chap" id="c-k7">
+  <div class="kicker">Woche 3 · Kapitel 7</div>
+  <h2>Feedback vom Partner</h2>
+  <p class="lead">Fertig? Tauscht das Gerät mit einem Partner. Prüft den CV des anderen mit dieser Checkliste. Seid ehrlich und freundlich.</p>
+  <div class="card"><label class="f">Ich prüfe den CV von:</label><input type="text" data-save="fb_name"></div>
+  <div class="card cl" id="fbList"></div>
+  <div class="card task">
+    <div class="tlabel">2 Sterne und 1 Wunsch</div>
+    <label class="f">Stern 1: Das ist richtig gut …</label><input type="text" data-save="fb_s1">
+    <label class="f">Stern 2: Das gefällt mir auch …</label><input type="text" data-save="fb_s2">
+    <label class="f">Wunsch: Das könntest du noch verbessern …</label><input type="text" data-save="fb_w">
+  </div>
+</section>
+
+<!-- K8 -->
+<section class="chap" id="c-k8">
+  <div class="kicker">Woche 4 · Kapitel 8</div>
+  <h2>Meinen CV vorstellen</h2>
+  <p class="lead">Du hast ungefähr 1 Minute. Bereite die 4 Teile vor und übe mit der Uhr.</p>
+  <div class="card task">
+    <div class="tlabel">Mein Spickzettel</div>
+    <label class="f">1 · Wer bin ich? <span class="hint">„Ich heiße … und ich bin in der Klasse …“</span></label><input type="text" data-save="p1">
+    <label class="f">2 · Meine Schule und meine Stages <span class="hint">„Mein interessantestes Praktikum war bei …, weil …“</span></label><input type="text" data-save="p2">
+    <label class="f">3 · Meine größte Stärke <span class="hint">„Meine Stärke ist …, das sieht man zum Beispiel, wenn …“</span></label><input type="text" data-save="p3">
+    <label class="f">4 · Was habe ich nach dem Feedback geändert? <span class="hint">„Mein Partner hat gesagt …, deshalb habe ich …“</span></label><input type="text" data-save="p4">
+  </div>
+  <div class="card">
+    <b>Übungs-Uhr</b>
+    <div class="row" style="justify-content:space-between;margin-top:8px">
+      <div class="timer" id="timer">1:00</div>
+      <div class="row"><button class="btn" id="tStart">Start</button><button class="btn ghost" id="tReset">Zurück</button></div>
+    </div>
+    <div class="bar"><i id="tBar"></i></div>
+  </div>
+  <div class="card">
+    <b>Tipps für die Präsentation</b>
+    <ul><li>Schau in die Klasse, nicht nur auf den Bildschirm.</li><li>Sprich langsam und laut genug.</li><li>Zeig mit der Hand auf die Rubrik, über die du gerade sprichst.</li><li>Am Ende: „Danke fürs Zuhören! Habt ihr Fragen?“</li></ul>
+  </div>
+  <div class="card task">
+    <div class="tlabel">Feedback für andere</div>
+    <p style="margin-top:0" class="hint">Schreib dir für jeden Vortrag 1 Stern und 1 Tipp auf.</p>
+    <textarea data-save="p_feedback" style="min-height:120px" placeholder="Name: Stern … / Tipp …"></textarea>
+  </div>
+</section>
+
+<!-- K9 -->
+<section class="chap" id="c-k9">
+  <div class="kicker">Woche 4 · Kapitel 9</div>
+  <h2>Ausblick: die Lettre de motivation</h2>
+  <p class="lead">Zu einer Bewerbung gehören immer 2 Dokumente: der CV und der Motivationsbrief.</p>
+  <div class="vs">
+    <div class="card"><h4>Der CV</h4><p style="margin:0">zeigt <b>was</b> du gemacht hast und was du kannst. Stichpunkte, Tabellenform, für jede Bewerbung fast gleich.</p></div>
+    <div class="card"><h4>Die Lettre de motivation</h4><p style="margin:0">erklärt, <b>warum</b> du genau zu dieser Firma oder diesem Beruf willst. Ganze Sätze, für jede Firma neu geschrieben.</p></div>
+  </div>
+  <div class="card task">
+    <div class="tlabel">Aufgabe 6 · Brief-Puzzle</div>
+    <p style="margin-top:0">Bring die 10 Teile eines Motivationsbriefes mit den Pfeilen in die richtige Reihenfolge (von oben nach unten).</p>
+    <ul class="pz" id="puzzle"></ul>
+    <div class="row" style="margin-top:8px"><button class="btn" id="pzCheck">Kontrollieren</button><button class="btn ghost" id="pzReset">Neu mischen</button></div>
+    <div class="fb" id="pzFb"></div>
+  </div>
+  <div class="card">
+    <b>So sieht der Brief von Lisa aus</b>
+    <div class="letter" style="margin-top:10px">
+      <p>Lisa Mustermann<br>12, rue des Fleurs<br>L-3568 Dudelange<br>Tél. : …</p>
+      <p class="r">Coiffure …<br>À l'attention de Madame …<br>…</p>
+      <p class="r">Dudelange, le … </p>
+      <p><b>Objet : candidature spontanée</b></p>
+      <p>Madame, Monsieur,</p>
+      <p>Désirant travailler en tant que coiffeuse, j'ai le plaisir de vous présenter ma candidature pour un tel poste.</p>
+      <p>Ayant effectué un stage d'orientation professionnelle en tant que coiffeuse, je souhaite continuer à apprendre et à évoluer dans ce domaine.</p>
+      <p>Étant autonome et fiable et ayant le sens des responsabilités, je souhaite mettre ces aptitudes ainsi que mes compétences professionnelles acquises durant les stages d'orientation professionnelle au profit de votre entreprise. Par ailleurs, je sais facilement m'adapter à un nouvel environnement.</p>
+      <p>Si quelques précisions vous manquent à mon sujet, je me ferai un plaisir de vous les communiquer lors d'un entretien que je vous propose de me fixer.</p>
+      <p>En vous remerciant de l'attention que vous porterez à ma candidature, je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.</p>
+      <p class="r">MUSTERMANN Lisa</p>
+      <p>Annexe : Curriculum Vitae</p>
+    </div>
+  </div>
+</section>
+
+<div class="footer-nav"><button class="btn ghost" id="prevBtn">← Zurück</button><button class="btn" id="nextBtn">Weiter →</button></div>
+</main>
+<div id="pdfStage"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.__startApp=function(){
+"use strict";
+var S=window.__S||{};
+function save(){window.__persist&&window.__persist();}
+function $(s,r){return (r||document).querySelector(s);}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+var toastT;
+function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("show");},2600);}
+function fb(el,cls,msg){el.className="fb show "+cls;el.innerHTML=msg;}
+
+/* ---------- Navigation ---------- */
+var CH=[["k1","W1","Was ist ein CV?"],["k2","W1","Aufbau"],["k3","W1","Regeln & Quiz"],["k4","W2","Fehlerjagd"],["k5","HA","Daten sammeln"],["k6","W3","Mein CV"],["k7","W3","Feedback"],["k8","W4","Präsentieren"],["k9","W4","Lettre de motivation"]];
+$("#nav").innerHTML=CH.map(function(c,i){return '<a href="#'+c[0]+'" data-k="'+c[0]+'"><span class="wk">'+c[1]+'</span>'+(i+1)+' · '+c[2]+'</a>';}).join("");
+var cur="k1";
+function show(){
+  var h=(location.hash||"").replace("#","");
+  if(!CH.some(function(c){return c[0]===h;}))h="k1";
+  cur=h;
+  $$("section.chap").forEach(function(s){s.classList.toggle("active",s.id==="c-"+h);});
+  $$("#nav a").forEach(function(a){a.classList.toggle("active",a.dataset.k===h);if(a.dataset.k===h){var nv=$("#nav");nv.scrollLeft=a.offsetLeft-nv.clientWidth/2+a.offsetWidth/2;}});
+  var i=CH.findIndex(function(c){return c[0]===h;});
+  $("#prevBtn").style.visibility=i>0?"visible":"hidden";
+  $("#nextBtn").style.visibility=i<CH.length-1?"visible":"hidden";
+  window.scrollTo(0,0);
+  requestAnimationFrame(fitAll);
+}
+window.addEventListener("hashchange",show);
+$("#prevBtn").onclick=function(){var i=CH.findIndex(function(c){return c[0]===cur;});if(i>0)location.hash=CH[i-1][0];};
+$("#nextBtn").onclick=function(){var i=CH.findIndex(function(c){return c[0]===cur;});if(i<CH.length-1)location.hash=CH[i+1][0];};
+
+/* ---------- Fit A4 sheets ---------- */
+function fitAll(){
+  $$("[data-fit]").forEach(function(el){
+    var wrap=el.parentElement; if(!wrap.offsetParent)return;
+    var avail=wrap.clientWidth-28; var sc=Math.min(1,avail/794);
+    el.style.transform="scale("+sc+")";
+    var sh=el.firstElementChild; var h=sh?sh.offsetHeight:1123;
+    el.style.height=(h*sc)+"px"; el.style.width="794px"; el.style.marginLeft=sc<1?"0":Math.max(0,(avail-794)/2)+"px";
+  });
+}
+window.addEventListener("resize",fitAll);
+
+/* ---------- Simple saved fields ---------- */
+S.f=S.f||{};
+$$("[data-save]").forEach(function(el){
+  var k=el.dataset.save; if(S.f[k]!=null)el.value=S.f[k];
+  el.addEventListener("input",function(){S.f[k]=el.value;save();});
+});
+
+/* ---------- K1 Cloze ---------- */
+var CLOZE=[
+ ["Ein CV (Curriculum Vitae) ist ein ",["Lebenslauf","Liebesbrief","Zeugnis"],0,"."],
+ [" Er zeigt einem ",["Chef","Freund","Lehrer"],0," auf einen Blick, wer ich bin, was ich "],
+ ["",["gelernt","gegessen","gekauft"],0," habe und was ich "],
+ ["",["kann","hasse","verdiene"],0,"."],
+ [" Das Ziel ist, zu einem ",["Gespräch","Fest","Spiel"],0," oder Praktikum eingeladen zu werden."],
+ [" Die Infos im CV müssen immer ",["ehrlich","lustig","lang"],0," sein."]
+];
+S.cloze=S.cloze||{};
+function buildCloze(){
+  $("#cloze").innerHTML=CLOZE.map(function(c,i){
+    var opts=['<option value="">…</option>'].concat(c[1].map(function(o,j){return '<option value="'+j+'"'+(String(S.cloze[i])===String(j)?" selected":"")+'>'+o+'</option>';}));
+    return esc(c[0])+'<select class="gap" data-i="'+i+'">'+opts.join("")+'</select>'+esc(c[3]);
+  }).join("");
+  $$("#cloze select").forEach(function(s){s.onchange=function(){S.cloze[s.dataset.i]=s.value;s.classList.remove("ok","no");save();};});
+}
+buildCloze();
+$("#clozeCheck").onclick=function(){
+  var ok=0;$$("#cloze select").forEach(function(s){var c=CLOZE[s.dataset.i];var r=s.value!==""&&+s.value===c[2];s.classList.toggle("ok",r);s.classList.toggle("no",!r);if(r)ok++;});
+  fb($("#clozeFb"),ok===CLOZE.length?"good":"bad",ok===CLOZE.length?"Super, alles richtig!":ok+" von "+CLOZE.length+" richtig. Schau dir die roten Lücken noch einmal an.");
+};
+$("#clozeReset").onclick=function(){S.cloze={};save();buildCloze();$("#clozeFb").className="fb";};
+
+/* ---------- CV renderer ---------- */
+function lines(arr){return arr.filter(function(x){return x&&String(x).trim();});}
+function renderCV(cv,opt){
+  opt=opt||{};var hide=!!opt.hide;
+  function v(x,ph){x=(x||"").trim();if(hide&&ph==="c")return "•••";return x?esc(x):'<span class="muted">…</span>';}
+  var photo=cv.photo?'<img src="'+cv.photo+'" alt="">':'Photo';
+  var name=((cv.prenom||"").trim()+" "+(cv.nom||"").trim().toUpperCase()).trim();
+  var side='<div class="side"><div class="photo">'+photo+'</div><p class="name">'+(name?esc(name):'<span class="muted">Prénom NOM</span>')+'</p>'+
+    '<p>'+v(cv.rue,"c")+'</p><p>'+v(cv.cp,"c")+'</p><div class="sp"></div>'+
+    '<p>Tél. : '+v(cv.tel,"c")+'</p><p>E-mail : '+v(cv.email,"c")+'</p><div class="sp"></div>'+
+    '<p>Date de naissance : '+v(cv.naissance,"c")+'</p>'+(cv.lieu?'<p>Lieu de naissance : '+v(cv.lieu,"c")+'</p>':'')+
+    '<p>Nationalité : '+v(cv.nationalite)+'</p><p>État civil : '+v(cv.etat)+'</p><p>Permis de conduire : '+v(cv.permis||"/")+'</p></div>';
+  function ent(list,a,b,c){list=(list||[]).filter(function(e){return (e[a]||e[b]||e[c]||"").trim();});
+    if(!list.length)return '<p class="muted">…</p>';
+    return list.map(function(e){return '<div class="ent"><div class="d">'+esc(e[a]||"")+'</div><div>'+esc(e[b]||"")+(e[c]?'<br>'+esc(e[c]):'')+'</div></div>';}).join("");}
+  function ul(arr){arr=lines(arr||[]);return arr.length?'<ul>'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ul>':'<p class="muted">…</p>';}
+  var langs=(cv.langues||[]).filter(function(l){return (l.l||"").trim();}).map(function(l){return l.l.trim()+" – "+(l.n||"");});
+  var loisirs=(cv.loisirs||"").trim();
+  var divers=[];if(loisirs)divers.push("Loisirs : "+loisirs);if((cv.autres||"").trim())divers.push(cv.autres.trim());
+  var main='<div class="mainc"><p class="title">Curriculum Vitae</p>'+
+    '<div class="sec" data-r="etudes"><h5>Études et formations</h5>'+ent(cv.etudes,"p","e","c")+'</div>'+
+    '<div class="sec" data-r="exp"><h5>Expériences professionnelles</h5>'+ent(cv.exp,"p","e","c")+'</div>'+
+    '<div class="sec" data-r="comp"><h5>Compétences professionnelles et personnelles</h5>'+ul(cv.comp)+'</div>'+
+    '<div class="sec" data-r="lang"><h5>Connaissances linguistiques</h5>'+ul(langs)+'</div>'+
+    '<div class="sec" data-r="info"><h5>Connaissances informatiques</h5>'+ul(cv.info)+'</div>'+
+    '<div class="sec" data-r="div"><h5>Divers</h5>'+ul(divers)+'</div></div>';
+  return '<div class="sheet">'+side+main+'</div>';
+}
+var LISA={prenom:"Lisa",nom:"Mustermann",rue:"12, rue des Fleurs",cp:"L-3568 Dudelange",tel:"691 000 000",email:"lisa.mustermann@mail.lu",naissance:"03.05.2004",lieu:"Luxembourg",nationalite:"monténégrine",etat:"célibataire",permis:"/",photo:"",
+ etudes:[{p:"2018 – 2019",e:"Lycée Bel-Val",c:"5e de la voie de préparation"},{p:"2017 – 2018",e:"Lycée Bel-Val",c:"6e de la voie de préparation"},{p:"2016 – 2017",e:"Lycée Nic-Biever",c:"7e de la voie de préparation"},{p:"2009 – 2016",e:"Enseignement fondamental",c:"École Strutzbierg, Dudelange"}],
+ exp:[{p:"24.06.19 – 28.06.19",e:"KBIT'S Place",c:"Informaticienne (stage)"},{p:"11.03.19 – 15.03.19",e:"Coiffure Beim Figaro",c:"Coiffeuse (stage)"},{p:"20.11.18 – 24.11.18",e:"Zeeman",c:"Commise de vente (stage)"},{p:"25.06.18 – 29.06.18",e:"Butlers",c:"Commise de vente (stage)"}],
+ comp:["Dynamisme","Autonomie","Volonté de s'investir et d'engagement","Esprit d'équipe et de coopération"],
+ langues:[{l:"Monténégrin",n:"langue maternelle"},{l:"Luxembourgeois",n:"très bonnes connaissances"},{l:"Allemand",n:"très bonnes connaissances"},{l:"Français",n:"connaissances de base"}],
+ info:["Word","PowerPoint","Internet","Office 365"],loisirs:"natation, voyager",autres:""};
+$("#modelCV").innerHTML=renderCV(LISA);
+
+/* ---------- K2 Sort ---------- */
+var RUB=[["coord","Coordonnées personnelles","--c7"],["etudes","Études et formations","--c1"],["exp","Expériences professionnelles","--c2"],["comp","Compétences","--c3"],["lang","Connaissances linguistiques","--c4"],["info","Connaissances informatiques","--c5"],["div","Divers","--c6"]];
+var ITEMS=[["12, rue des Fleurs, L-3568 Dudelange","coord"],["Date de naissance : 03.05.2010","coord"],["2024 – 2025 : Lycée Bel-Val, 5e","etudes"],["2016 – 2022 : École fondamentale","etudes"],["Stage chez Zeeman – commise de vente","exp"],["Stage chez Coiffure Beim Figaro","exp"],["Esprit d'équipe","comp"],["Ponctualité","comp"],["Luxembourgeois – langue maternelle","lang"],["Français – connaissances de base","lang"],["Word, PowerPoint","info"],["Office 365","info"],["Loisirs : natation","div"],["Premiers secours","div"]];
+var sortState, sel=null;
+function initSort(fresh){
+  if(fresh||!S.sort||!S.sort.order){S.sort={order:shuffle(ITEMS.map(function(_,i){return i;})),place:{}};save();}
+  sortState=S.sort;sel=null;drawSort();
+}
+function drawSort(){
+  var pool=sortState.order.filter(function(i){return !sortState.place[i];});
+  $("#pool").innerHTML=pool.length?pool.map(function(i){return '<button class="chip" data-it="'+i+'">'+esc(ITEMS[i][0])+'</button>';}).join(""):'<span class="hint">Alle Infos sind verteilt. Jetzt kontrollieren!</span>';
+  $("#buckets").innerHTML=RUB.map(function(r){
+    var its=sortState.order.filter(function(i){return sortState.place[i]===r[0];});
+    return '<div class="bucket" data-b="'+r[0]+'"><h4 style="color:var('+r[2]+')">'+r[1]+'</h4><div class="items">'+its.map(function(i){return '<button class="chip" data-it="'+i+'">'+esc(ITEMS[i][0])+'</button>';}).join("")+'</div></div>';
+  }).join("");
+  $$("#pool .chip").forEach(function(b){b.onclick=function(e){e.stopPropagation();sel=+b.dataset.it;$$("#pool .chip").forEach(function(x){x.classList.toggle("sel",x===b);});$$(".bucket").forEach(function(x){x.classList.add("hot");});};});
+  $$(".bucket .chip").forEach(function(b){b.onclick=function(e){e.stopPropagation();delete sortState.place[b.dataset.it];save();drawSort();};});
+  $$(".bucket").forEach(function(bk){bk.onclick=function(){if(sel==null)return;sortState.place[sel]=bk.dataset.b;sel=null;save();drawSort();};});
+}
+initSort(false);
+$("#sortCheck").onclick=function(){
+  var ok=0,placed=0;
+  $$(".bucket .chip").forEach(function(b){var i=+b.dataset.it;placed++;var r=ITEMS[i][1]===sortState.place[i];b.classList.toggle("ok",r);b.classList.toggle("no",!r);if(r)ok++;});
+  if(placed<ITEMS.length)fb($("#sortFb"),"info","Noch nicht alles verteilt: "+placed+" von "+ITEMS.length+". Richtig sind bisher "+ok+".");
+  else fb($("#sortFb"),ok===ITEMS.length?"good":"bad",ok===ITEMS.length?"Perfekt! Du kennst alle 7 Rubriken.":ok+" von "+ITEMS.length+" richtig. Tippe die roten Infos an, um sie zurückzulegen.");
+};
+$("#sortReset").onclick=function(){initSort(true);$("#sortFb").className="fb";};
+
+/* ---------- K3 Quiz ---------- */
+var QUIZ=[
+ ["Im CV kommt die neueste Schule zuerst.",true,"Richtig: anti-chronologisch, das Neueste oben."],
+ ["Ich schreibe meine Sozialversicherungsnummer in den CV.",false,"Falsch: Diese Nummer gehört nie in einen CV."],
+ ["Ein Selfie aus dem Urlaub ist ein gutes CV-Foto.",false,"Falsch: Nur ein seriöses Passfoto."],
+ ["Bei den Sprachen schreibe ich ehrlich mein Niveau.",true,"Richtig: Im Gespräch merkt der Chef sofort, wenn es nicht stimmt."],
+ ["Die E-Mail-Adresse coolboy2010@… ist in Ordnung.",false,"Falsch: Nimm vorname.nachname@…"],
+ ["Wenn ich kein Praktikum habe, darf ich eins erfinden.",false,"Falsch: Nie lügen! Schreib lieber Schulprojekte oder Vereinsarbeit."],
+ ["Unter Divers stehen meine Hobbys.",true,"Richtig: Loisirs und andere Aktivitäten (z. B. Premiers secours)."],
+ ["Je mehr Hobbys, desto besser.",false,"Falsch: 2 bis 4 Hobbys reichen."],
+ ["Der Vorname steht vor dem Nachnamen.",true,"Richtig: Lisa MUSTERMANN."],
+ ["Namen und Berufe meiner Eltern gehören in den CV.",false,"Falsch: Die Daten deiner Familie gehören nicht in deinen CV."]
+];
+S.quiz=S.quiz||{};
+function drawQuiz(){
+  $("#quiz").innerHTML=QUIZ.map(function(q,i){
+    var a=S.quiz[i];var done=a!=null;
+    function cls(val){if(!done)return "";if(String(a)===String(val))return val===q[1]?"ok":"no";return "";}
+    return '<div class="q'+(done?" done":"")+'"><div class="txt">'+(i+1)+'. '+esc(q[0])+'</div><div class="tf"><button data-q="'+i+'" data-v="1" class="'+cls(true)+'">Richtig</button><button data-q="'+i+'" data-v="0" class="'+cls(false)+'">Falsch</button></div><div class="why">'+esc(q[2])+'</div></div>';
+  }).join("");
+  $$("#quiz .tf button").forEach(function(b){b.onclick=function(){var i=+b.dataset.q;if(S.quiz[i]!=null)return;S.quiz[i]=b.dataset.v==="1";save();drawQuiz();};});
+  var n=Object.keys(S.quiz).length;
+  if(n===QUIZ.length){var ok=QUIZ.filter(function(q,i){return S.quiz[i]===q[1];}).length;fb($("#quizFb"),ok>=8?"good":"info",ok+" von "+QUIZ.length+" Punkten. "+(ok>=8?"Stark!":"Lies dir die Regeln oben noch einmal durch."));}
+  else $("#quizFb").className="fb";
+}
+drawQuiz();
+$("#quizReset").onclick=function(){S.quiz={};save();drawQuiz();};
+
+/* ---------- K4 Hunt ---------- */
+function L(t,e){return {t:t,e:e==null?[]:[].concat(e)};}
+var HUNT={
+ A:{label:"CV A · Kevin (leicht)",photo:L("Foto: Selfie am Strand mit Sonnenbrille",5),
+  side:[L("kevin muller",1),L("L-4001 Esch-sur-Alzette, 5 rue de l'Alzette",2),L("Tél. :",3),L("E-mail : kevin.leboss99@mail.lu",4),L("Date de naissance : 14.03.2010"),L("Nationalité : luxembourgeoise"),L("État civil : célibataire"),L("Permis de conduire : /")],
+  main:[{h:L("Études et formations"),l:[L("2016 – 2022 : École fondamentale, Esch-sur-Alzette",6),L("2022 – 2023 : Lycée Bel-Val – 7e de la voie de préparation",6),L("2023 – 2024 : Lycée Bel-Val – 6e de la voie de préparation",6),L("2024 – 2025 : Lycée Bel-Val – 5e de la voie de préparation",6)]},
+   {h:L("Experiances profesionnelles",7),l:[L("Stage : Cactus – vendeur",8),L("Stage : Garage Lux – mécanicien",8)]},
+   {h:L("Compétences professionnelles et personnelles"),l:[L("Dynamisme"),L("Esprit d'équipe"),L("Ponctualité")]},
+   {h:L("Connaissances linguistiques"),l:[L("Luxembourgeois – langue maternelle"),L("Allemand – très bonnes connaissances"),L("Français – connaissances de base"),L("Anglais – parfait, je parle comme un Américain",9)]},
+   {h:L("Connaissances informatiques"),l:[L("Word, PowerPoint, Internet")]},
+   {h:L("Divers"),l:[L("Loisirs : football, jeux vidéo (jusqu'à 3h du matin), dormir, TikTok, Netflix, sortir avec les potes, manger, shopping, basket",10)]}],
+  err:["Name klein geschrieben → Kevin MULLER","Adresse in 1 Zeile, PLZ zuerst → 5, rue de l'Alzette / L-4001 Esch-sur-Alzette","Telefonnummer fehlt → GSM-Nummer angeben","Unseriöse E-Mail → kevin.muller@…","Selfie statt Passfoto → seriöses Passfoto 35 × 45 mm","Schulen chronologisch (älteste zuerst) → anti-chronologisch: 2024 – 2025 zuerst","Rechtschreibfehler → Expériences professionnelles","Stages ohne Datum → z. B. 17.03.25 – 21.03.25","Übertriebenes Sprachniveau → ehrlich, z. B. Anglais – bonnes connaissances","Zu viele und unseriöse Hobbys → 2 bis 4, z. B. football, basket"]},
+ B:{label:"CV B · Sarah (mittel)",photo:L("Passfoto"),
+  side:[L("Sarah DA SILVA"),L("23, rue du Moulin"),L("L-3480 Dudelange"),L("Tél. : 691 123 456"),L("E-mail : sarah.dasilva@mail.lu"),L("Date de naissance :",1),L("Nationalité : portugaise"),L("N° de sécurité sociale : 2010 0612 345 67",2),L("Père : José Da Silva, maçon",3),L("Mère : Ana Da Silva, femme de ménage",3)],
+  main:[{h:L("Expériences professionnelles"),l:[L("Stage 1 : 25/6/24 – 29/6 · Pharmacie Centrale, Dudelange · aide en pharmacie",[4,5]),L("Stage 2 : mars 25 · Coiffure Beauté · coiffeuse",[4,5])]},
+   {h:L("Études et formations"),l:[L("2024 – 2025 : LBV 5P",6),L("2023 – 2024 : LBV 6P",6),L("2022 – 2023 : LNB 7P",6),L("2016 – 2022 : École fondamentale, Dudelange")]},
+   {h:L("Compétences professionnelles et personnelles"),l:[L("cool, sympa, je suis la meilleure",7)]},
+   {h:L("Connaissances linguistiques"),l:[L("Portugais – langue maternelle"),L("Luxembourgeois – bonnes connaissances"),L("Français – bonnes connaissances"),L("Allemand – connaissances de base")]},
+   {h:L("Connaissances informatiques"),l:[L("TikTok, Snapchat, Instagram",8)]},
+   {h:L("Divers"),l:[L("Religion : catholique pratiquante",9),L("Loisirs : danse, lecture")]}],
+  err:["Geburtsdatum fehlt → Date de naissance angeben","Sozialversicherungsnummer → streichen, nie angeben","Namen und Berufe der Eltern → streichen","Stages chronologisch → neuester Stage zuerst","Datumsformat uneinheitlich → 24.03.25 – 28.03.25","Unbekannte Abkürzungen → Lycée Bel-Val, 5e de la voie de préparation","Keine professionellen Kompetenzen → Dynamisme, esprit d'équipe, ponctualité","Soziale Netzwerke statt Informatik → Word, PowerPoint, Internet","Religion → streichen"]},
+ C:{label:"CV C · Tom (schwer)",photo:L("Passfoto"),miss:"lang",
+  side:[L("Schmit Tom",1),L("8, rue de la Gare"),L("L-4130 Esch-sur-Alzette"),L("Tél. : 621 987 654"),L("E-mail : tom.schmit@mail.lu"),L("Date de naissance : 02.09.2010"),L("Nationalité : luxembourgeoise"),L("État civil : en couple avec Jessica",2),L("Permis de conduire : bientôt !",3)],
+  main:[{h:L("Études et formations"),l:[L("2024 – 2025 : Lycé Nic-Biever – 5e de la voie de préparation",4),L("2023 – 2024 : Lycé Nic-Biever – 6e de la voie de préparation",4),L("2022 – 2023 : Lycée Nic-Biever – 7e de la voie de préparation"),L("2016 – 2022 : École fondamentale, Dudelange")]},
+   {h:L("Expériences professionnelles"),l:[L("2019 – 2023 : Restaurant Le Gourmet, Luxembourg – Chef de cuisine",[5,6]),L("10.03.25 – 14.03.25 : Boulangerie Fischer – vendeur (stage)",6)]},
+   {h:L("Compétences professionnelles et personnelles"),l:[L("Je suis quelqu'un qui aime bien travailler mais parfois j'arrive en retard le matin.",7)]},
+   {h:L("Connaissances informatiques"),l:[L("Word, Excel, Internet")]},
+   {h:L("Divers"),l:[L("Membre des Jeunes du parti XYZ",9),L("Loisirs : cuisine, vélo")]}],
+  err:["Nachname zuerst → Tom SCHMIT","„en couple“ ist kein État civil → célibataire","„bientôt !“ → Permis de conduire : /","Rechtschreibfehler → Lycée","Erfundener Job: Tom war 9 bis 13 Jahre alt → streichen, nie lügen","Falsche Reihenfolge → neuestes zuerst","Negativer, ganzer Satz → positive Stichwörter: fiabilité, volonté d'apprendre","Rubrik Connaissances linguistiques fehlt → Sprachen mit Niveau ergänzen","Politische Partei → streichen"]}
+};
+S.hunt=S.hunt||{cur:"A",A:{},B:{},C:{},miss:{}};
+S.hunt.miss=S.hunt.miss||{};
+S.ct=S.ct||{A:{},B:{},C:{}};
+var showSol=false;
+function huntHTML(id,forPdf){
+  var d=HUNT[id];
+  function ln(x,tag){tag=tag||"span";if(forPdf)return '<'+tag+'>'+esc(x.t)+'</'+tag+'>';
+    var st=S.hunt[id];var found=x.e.length&&x.e.every(function(n){return st[n];});
+    var cls="l"+(found?" found":"")+(showSol&&x.e.length&&!found?" reveal":"");
+    return '<'+tag+' class="'+cls+'" data-e="'+x.e.join(",")+'">'+esc(x.t)+'</'+tag+'>';}
+  var side='<div class="side"><div class="photo">'+ln(d.photo)+'</div>'+d.side.map(function(x,i){return '<p'+(i===0?' class="name"':'')+'>'+ln(x)+'</p>';}).join("")+'</div>';
+  var main='<div class="mainc"><p class="title">Curriculum Vitae</p>'+d.main.map(function(s){return '<div class="sec"><h5>'+ln(s.h)+'</h5><ul>'+s.l.map(function(x){return '<li>'+ln(x)+'</li>';}).join("")+'</ul></div>';}).join("")+'</div>';
+  return '<div class="sheet">'+side+main+'</div>';
+}
+function huntTotal(id){return HUNT[id].err.length;}
+function huntFound(id){var st=S.hunt[id];return Object.keys(st).filter(function(k){return st[k];}).length;}
+function drawHunt(){
+  var id=S.hunt.cur;var d=HUNT[id];
+  $("#huntTabs").innerHTML=Object.keys(HUNT).map(function(k){return '<button data-h="'+k+'" class="'+(k===id?"on":"")+'">'+HUNT[k].label+' · '+huntFound(k)+'/'+huntTotal(k)+'</button>';}).join("");
+  $$("#huntTabs button").forEach(function(b){b.onclick=function(){S.hunt.cur=b.dataset.h;showSol=false;save();drawHunt();$("#huntFb").className="fb";};});
+  $("#huntCV").innerHTML=huntHTML(id);
+  $("#huntCount").textContent=huntFound(id)+" / "+huntTotal(id);
+  $("#missBtn").style.display=d.miss?"inline-flex":"none";
+  $("#missBox").style.display="none";
+  $("#huntSolBox").classList.toggle("show",showSol);
+  $("#huntSolList").innerHTML=d.err.map(function(e){return '<li>'+esc(e)+'</li>';}).join("");
+  $("#huntSol").textContent=showSol?"Lösung verbergen":"Lösung zeigen";
+  $$("#huntCV .l").forEach(function(el){el.onclick=function(){
+    var es=el.dataset.e?el.dataset.e.split(",").map(Number):[];
+    if(!es.length){el.classList.add("fine");fb($("#huntFb"),"info","Diese Zeile ist korrekt. Such weiter!");return;}
+    var neu=es.filter(function(n){return !S.hunt[id][n];});
+    es.forEach(function(n){S.hunt[id][n]=true;});save();
+    var msg=neu.length?("Gefunden! "+(es.length>1?"In dieser Zeile stecken "+es.length+" Fehler. ":"")+"Schreib in die Tabelle, was falsch ist und wie es richtig wäre."):"Diesen Fehler habt ihr schon gefunden.";
+    drawHunt();fb($("#huntFb"),"good",msg);
+    if(huntFound(id)===huntTotal(id))fb($("#huntFb"),"good","Stark! Ihr habt alle "+huntTotal(id)+" Fehler gefunden. Habt ihr alles in die Tabelle geschrieben?");
+  };});
+  drawTable();
+  requestAnimationFrame(fitAll);
+}
+$("#missBtn").onclick=function(){var b=$("#missBox");b.style.display=b.style.display==="none"?"block":"none";
+  $("#missOpts").innerHTML=RUB.map(function(r){return '<button class="chip" data-r="'+r[0]+'">'+r[1]+'</button>';}).join("");
+  $$("#missOpts .chip").forEach(function(c){c.onclick=function(){var id=S.hunt.cur;
+    if(c.dataset.r===HUNT[id].miss){var idx=HUNT[id].err.findIndex(function(e){return e.indexOf("fehlt")>-1&&e.indexOf("Rubrik")>-1;})+1;S.hunt[id][idx]=true;save();drawHunt();fb($("#huntFb"),"good","Genau! Die Connaissances linguistiques fehlen.");}
+    else{c.classList.add("no");}};});
+};
+$("#huntReset").onclick=function(){S.hunt[S.hunt.cur]={};showSol=false;save();drawHunt();$("#huntFb").className="fb";};
+$("#huntSol").onclick=function(){showSol=!showSol;drawHunt();};
+function drawTable(){
+  var id=S.hunt.cur;var n=huntTotal(id);var t=S.ct[id]=S.ct[id]||{};
+  var h='<tr><th>Nr.</th><th>Was ist falsch?</th><th>Warum?</th><th>Korrektur</th></tr>';
+  for(var i=1;i<=n;i++){h+='<tr><td class="n">'+i+'</td>'+[0,1,2].map(function(c){var k=i+"_"+c;return '<td><input type="text" data-k="'+k+'" value="'+esc(t[k]||"")+'"></td>';}).join("")+'</tr>';}
+  $("#ctable").innerHTML=h;
+  $$("#ctable input").forEach(function(inp){inp.oninput=function(){t[inp.dataset.k]=inp.value;save();};});
+}
+S.top5=S.top5||["","","","",""];
+$("#top5").innerHTML=S.top5.map(function(v,i){return '<label class="f">'+(i+1)+'.</label><input type="text" data-t="'+i+'" value="'+esc(v)+'">';}).join("");
+$$("#top5 input").forEach(function(inp){inp.oninput=function(){S.top5[+inp.dataset.t]=inp.value;save();};});
+
+/* ---------- K5 Collect ---------- */
+var COL=["Meine Adresse mit Postleitzahl","Meine GSM-Nummer","Eine seriöse E-Mail-Adresse (vorname.nachname@…)","Mein Geburtsdatum und Geburtsort","Meine Nationalität","Alle Schulen seit der Grundschule (Jahre + Name + Klasse)","Alle Stages mit genauem Datum (Bescheinigungen!)","Was ich in jedem Stage gemacht habe","Meine Sprachen und wie gut ich sie spreche","Welche Programme ich am Computer kann","2 bis 4 Hobbys","Ein Passfoto (freiwillig)"];
+S.col=S.col||{};
+$("#collect").innerHTML='<b>Checkliste: Das brauche ich</b>'+COL.map(function(c,i){return '<label><input type="checkbox" data-c="'+i+'"'+(S.col[i]?" checked":"")+'> '+esc(c)+'</label>';}).join("");
+$$("#collect input").forEach(function(c){c.onchange=function(){S.col[c.dataset.c]=c.checked;save();};});
+
+/* ---------- K6 Builder ---------- */
+var COMP=["Dynamisme","Autonomie","Esprit d'équipe","Ponctualité","Fiabilité","Sens des responsabilités","Sens de l'organisation","Volonté d'apprendre","Volonté de s'investir","Contact aisé avec la clientèle","Capacités d'adaptation","Créativité","Flexibilité","Honnêteté","Esprit positif","Précision dans l'exécution des tâches","Soucieux/Soucieuse du travail bien fait","Bon sens de l'écoute","Politesse","Patience"];
+var INFO=["Word","Excel","PowerPoint","Internet","Outlook","Office 365","Teams","Canva"];
+var NIV=["langue maternelle","très bonnes connaissances","bonnes connaissances","connaissances de base"];
+function blankCV(){return {prenom:"",nom:"",rue:"",cp:"",tel:"",email:"",naissance:"",lieu:"",nationalite:"",etat:"célibataire",permis:"/",photo:"",etudes:[{p:"",e:"",c:""}],exp:[{p:"",e:"",c:""}],comp:[],langues:[{l:"Luxembourgeois",n:"langue maternelle"},{l:"Allemand",n:""},{l:"Français",n:""}],info:[],loisirs:"",autres:""};}
+S.cv=S.cv||blankCV();
+var cv=S.cv;
+function bindFields(){
+  $$("[data-cv]").forEach(function(el){el.value=cv[el.dataset.cv]||"";el.oninput=el.onchange=function(){cv[el.dataset.cv]=el.value;upd();};});
+}
+function drawLists(){
+  function entRows(key,ph){
+    return cv[key].map(function(e,i){return '<div class="lrow" style="grid-template-columns:1fr 1.2fr auto"><input type="text" placeholder="'+ph[0]+'" data-l="'+key+'" data-i="'+i+'" data-f="p" value="'+esc(e.p)+'"><input type="text" placeholder="'+ph[1]+'" data-l="'+key+'" data-i="'+i+'" data-f="e" value="'+esc(e.e)+'"><button class="x" type="button" data-del="'+key+'" data-i="'+i+'" title="Löschen">×</button><input type="text" style="grid-column:1/3" placeholder="'+ph[2]+'" data-l="'+key+'" data-i="'+i+'" data-f="c" value="'+esc(e.c)+'"></div>';}).join("");
+  }
+  $("#etudesList").innerHTML=entRows("etudes",["2024 – 2025","Lycée Bel-Val","5e de la voie de préparation"]);
+  $("#expList").innerHTML=entRows("exp",["17.03.25 – 21.03.25","Zeeman, Dudelange","Commise de vente (stage)"]);
+  $("#langList").innerHTML=cv.langues.map(function(l,i){return '<div class="lrow two"><input type="text" placeholder="Langue" data-lang="'+i+'" data-f="l" value="'+esc(l.l)+'"><select data-lang="'+i+'" data-f="n"><option value="">Niveau …</option>'+NIV.map(function(n){return '<option'+(l.n===n?" selected":"")+'>'+n+'</option>';}).join("")+'</select><button class="x" type="button" data-del="langues" data-i="'+i+'">×</button></div>';}).join("");
+  $$("[data-l]").forEach(function(inp){inp.oninput=function(){cv[inp.dataset.l][+inp.dataset.i][inp.dataset.f]=inp.value;upd();};});
+  $$("[data-lang]").forEach(function(inp){inp.oninput=inp.onchange=function(){cv.langues[+inp.dataset.lang][inp.dataset.f]=inp.value;upd();};});
+  $$("[data-del]").forEach(function(b){b.onclick=function(){cv[b.dataset.del].splice(+b.dataset.i,1);drawLists();upd();};});
+  drawChips();
+}
+function drawChips(){
+  var all=COMP.concat(cv.comp.filter(function(c){return COMP.indexOf(c)<0;}));
+  $("#compChips").innerHTML=all.map(function(c){return '<button type="button" class="chip'+(cv.comp.indexOf(c)>-1?" on":"")+'" data-comp="'+esc(c)+'">'+esc(c)+'</button>';}).join("");
+  $$("#compChips .chip").forEach(function(b){b.onclick=function(){var c=b.dataset.comp;var i=cv.comp.indexOf(c);if(i>-1)cv.comp.splice(i,1);else cv.comp.push(c);drawChips();upd();};});
+  var alli=INFO.concat(cv.info.filter(function(c){return INFO.indexOf(c)<0;}));
+  $("#infoChips").innerHTML=alli.map(function(c){return '<button type="button" class="chip'+(cv.info.indexOf(c)>-1?" on":"")+'" data-info="'+esc(c)+'">'+esc(c)+'</button>';}).join("");
+  $$("#infoChips .chip").forEach(function(b){b.onclick=function(){var c=b.dataset.info;var i=cv.info.indexOf(c);if(i>-1)cv.info.splice(i,1);else cv.info.push(c);drawChips();upd();};});
+}
+$$("[data-add]").forEach(function(b){b.onclick=function(){var k=b.dataset.add;if(k==="lang")cv.langues.push({l:"",n:""});else cv[k].push({p:"",e:"",c:""});drawLists();upd();};});
+$("#compAdd").onclick=function(){var v=$("#compOwn").value.trim();if(v&&cv.comp.indexOf(v)<0){cv.comp.push(v);$("#compOwn").value="";drawChips();upd();}};
+$("#photoIn").onchange=function(){var f=this.files&&this.files[0];if(!f)return;
+  var img=new Image();var url=URL.createObjectURL(f);img.onload=function(){var c=document.createElement("canvas");var W=280,H=360;c.width=W;c.height=H;var x=c.getContext("2d");
+    var r=Math.max(W/img.width,H/img.height);var w=img.width*r,h=img.height*r;x.drawImage(img,(W-w)/2,(H-h)/2,w,h);cv.photo=c.toDataURL("image/jpeg",0.85);URL.revokeObjectURL(url);upd();};img.src=url;};
+$("#photoDel").onclick=function(){cv.photo="";$("#photoIn").value="";upd();};
+$("#hideContact").onchange=upd;
+$("#loadEx").onclick=function(){if(!confirmBox("Dein CV wird durch das Beispiel von Lisa ersetzt.",function(){S.cv=cv=JSON.parse(JSON.stringify(LISA));bindFields();drawLists();upd();}))return;};
+$("#clearCv").onclick=function(){confirmBox("Wirklich alles löschen?",function(){S.cv=cv=blankCV();bindFields();drawLists();upd();});};
+/* in-page confirm (window.confirm is blocked) */
+function confirmBox(msg,yes){
+  var d=document.createElement("div");d.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.35);display:grid;place-items:center;z-index:60;padding:16px";
+  d.innerHTML='<div class="card" style="max-width:380px"><p style="margin-top:0;font-weight:700">'+esc(msg)+'</p><div class="row"><button class="btn">Ja</button><button class="btn ghost">Abbrechen</button></div></div>';
+  document.body.appendChild(d);var bs=d.querySelectorAll("button");bs[0].onclick=function(){d.remove();yes();};bs[1].onclick=function(){d.remove();};return false;
+}
+function yearOf(s){s=s||"";var m=s.match(/(19|20)\d{2}/);if(m)return +m[0];m=s.match(/\d{1,2}[.\/]\d{1,2}[.\/](\d{2})/);if(m)return 2000+(+m[1]);return null;}
+function orderOk(list){var ys=list.map(function(e){return yearOf(e.p);}).filter(function(y){return y!=null;});for(var i=1;i<ys.length;i++)if(ys[i]>ys[i-1])return false;return true;}
+function checks(){
+  var out=[];function add(ok,good,bad){out.push([ok,ok?good:bad]);}
+  add(cv.prenom.trim()&&cv.nom.trim(),"Vorname und Nachname","Vorname und Nachname fehlen");
+  add(cv.rue.trim()&&cv.cp.trim(),"Adresse in 2 Zeilen","Adresse vollständig ausfüllen (Straße + PLZ/Ort)");
+  add(cv.tel.trim(),"Telefonnummer","Telefonnummer fehlt");
+  var em=cv.email.trim().toLowerCase();
+  var badMail=/(boss|cool|sexy|love|king|queen|gamer|bg|babe|princess|prinzessin|swag|killer|xx)/.test(em)||(em.replace(/[^0-9]/g,"").length>2);
+  add(em&&em.indexOf("@")>0&&!badMail,"E-Mail sieht seriös aus",em?"E-Mail prüfen: am besten vorname.nachname@…":"E-Mail fehlt");
+  add(cv.naissance.trim(),"Geburtsdatum","Geburtsdatum fehlt");
+  var et=cv.etudes.filter(function(e){return (e.p+e.e).trim();});
+  add(et.length&&orderOk(et),"Schulen: das Neueste zuerst",et.length?"Schulen: das Neueste muss oben stehen":"Mindestens 1 Schule eintragen");
+  var ex=cv.exp.filter(function(e){return (e.p+e.e).trim();});
+  add(!ex.length||orderOk(ex),ex.length?"Stages: das Neueste zuerst":"Keine Stages? Dann Schulprojekte oder Vereinsarbeit eintragen","Stages: das Neueste muss oben stehen");
+  add(cv.comp.length>=3&&cv.comp.length<=6,"3 bis 6 Kompetenzen",cv.comp.length<3?"Wähle mindestens 3 Kompetenzen":"Höchstens 6 Kompetenzen, sonst wirkt es unglaubwürdig");
+  var lg=cv.langues.filter(function(l){return (l.l||"").trim();});
+  add(lg.length&&lg.every(function(l){return l.n;}),"Sprachen mit Niveau","Bei jeder Sprache das Niveau wählen");
+  add(cv.info.length>0,"Informatik-Kenntnisse","Wähle deine Computer-Programme");
+  var lo=(cv.loisirs||"").split(",").filter(function(x){return x.trim();});
+  add(lo.length>=1&&lo.length<=4,"Hobbys: "+lo.length,lo.length?"Höchstens 4 Hobbys":"Schreib 2 bis 4 Hobbys");
+  var all=JSON.stringify(cv).toLowerCase();
+  add(!/(religion|parti |politique|syndicat|sécurité sociale|securite sociale|père :|mère :)/.test(all),"Keine verbotenen Angaben","Achtung: Religion, Politik, Sozialversicherungsnummer oder Eltern gehören nicht in den CV");
+  return out;
+}
+var saveT;
+function upd(){
+  $("#myCV").innerHTML=renderCV(cv,{hide:$("#hideContact").checked});
+  var c=checks();var ok=c.filter(function(x){return x[0];}).length;
+  $("#checks").innerHTML='<li class="'+(ok===c.length?"ok":"w")+'" style="font-weight:800">'+ok+' von '+c.length+' Punkten erfüllt</li>'+c.map(function(x){return '<li class="'+(x[0]?"ok":"w")+'">'+(x[0]?"✓ ":"! ")+esc(x[1])+'</li>';}).join("");
+  clearTimeout(saveT);saveT=setTimeout(save,300);
+  requestAnimationFrame(fitAll);
+}
+bindFields();drawLists();upd();
+
+/* ---------- PDF ---------- */
+var dl=null;
+var libsP=null;
+function loadScript(src){return new Promise(function(res,rej){var s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+function libs(){if(!libsP)libsP=Promise.all([loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")]);return libsP;}
+function makePdf(html,filename,fbEl){
+  fb(fbEl,"info","PDF wird erstellt …");
+  libs().then(function(){
+    var st=$("#pdfStage");st.innerHTML=html;var el=st.firstElementChild;
+    return (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){return window.html2canvas(el,{scale:2,backgroundColor:"#ffffff",useCORS:true});});
+  }).then(function(canvas){
+    var pdf=new window.jspdf.jsPDF({unit:"mm",format:"a4"});
+    var w=210,h=canvas.height*w/canvas.width;
+    pdf.addImage(canvas.toDataURL("image/jpeg",0.92),"JPEG",0,0,w,Math.min(h,297));
+    $("#pdfStage").innerHTML="";
+    if(dl)return dl.save({filename:filename,data:pdf.output("blob")});
+    pdf.save(filename);
+  }).then(function(){fb(fbEl,"good","Fertig! Dein PDF wurde gespeichert.");})
+  .catch(function(e){var c=e&&e.code;fb(fbEl,"bad",c==="declined"?"Download abgebrochen.":"Das hat nicht geklappt. Versuch es noch einmal.");});
+}
+$("#pdfBtn").onclick=function(){
+  var n=((cv.prenom||"")+"_"+(cv.nom||"")).replace(/[^A-Za-zÀ-ÿ0-9_-]/g,"")||"Mon";
+  makePdf(renderCV(cv,{hide:$("#hideContact").checked}),"CV_"+n+".pdf",$("#pdfFb"));
+};
+$("#huntPdf").onclick=function(){var id=S.hunt.cur;makePdf(huntHTML(id,true),"Fehler-CV_"+id+".pdf",$("#huntFb"));};
+
+/* ---------- K7 Feedback ---------- */
+var FBL=["Alle 7 Rubriken sind da.","Vorname vor NACHNAME, Adresse in 2 Zeilen.","Die E-Mail-Adresse ist seriös.","Schulen und Stages: das Neueste steht oben.","Bei jedem Stage stehen Datum, Firma und Aufgabe.","Die Daten sind einheitlich geschrieben (z. B. 17.03.25).","Die Kompetenzen passen zur Person.","Jede Sprache hat ein ehrliches Niveau.","Keine verbotenen Angaben (Religion, Politik, Eltern, Sozialversicherungsnummer).","Keine Rechtschreibfehler, alles passt auf 1 Seite."];
+S.fbc=S.fbc||{};
+$("#fbList").innerHTML='<b>Checkliste</b>'+FBL.map(function(c,i){return '<label><input type="checkbox" data-c="'+i+'"'+(S.fbc[i]?" checked":"")+'> '+esc(c)+'</label>';}).join("")+'<div class="fb" id="fbSum"></div>';
+function fbSum(){var n=Object.keys(S.fbc).filter(function(k){return S.fbc[k];}).length;fb($("#fbSum"),n===FBL.length?"good":"info",n+" von "+FBL.length+" Punkten erfüllt.");}
+$$("#fbList input").forEach(function(c){c.onchange=function(){S.fbc[c.dataset.c]=c.checked;save();fbSum();};});
+fbSum();
+
+/* ---------- K8 Timer ---------- */
+var T=60,left=T,iv=null;
+function drawT(){var m=Math.floor(Math.max(left,0)/60),s=Math.max(left,0)%60;$("#timer").textContent=m+":"+(s<10?"0":"")+s;$("#timer").classList.toggle("end",left<=0);$("#tBar").style.width=((T-left)/T*100)+"%";}
+$("#tStart").onclick=function(){if(iv){clearInterval(iv);iv=null;$("#tStart").textContent="Weiter";return;}
+  $("#tStart").textContent="Pause";iv=setInterval(function(){left--;drawT();if(left<=0){clearInterval(iv);iv=null;$("#tStart").textContent="Start";toast("Die Minute ist um!");}},1000);};
+$("#tReset").onclick=function(){clearInterval(iv);iv=null;left=T;$("#tStart").textContent="Start";drawT();};
+drawT();
+
+/* ---------- K9 Puzzle ---------- */
+var PZ=["Meine Koordinaten (oben links)","Der Empfänger: Firma, « à l'attention de … »","Ort und Datum: Dudelange, le 9 novembre 2026","Objet : candidature spontanée","Madame, Monsieur,","Warum will ich zu dieser Firma? (Motivation)","Was kann ich? (Stärken, Stages)","Bitte um ein Gespräch","Formule de politesse und Unterschrift","Annexe : Curriculum Vitae"];
+function initPz(fresh){if(fresh||!S.pz||S.pz.length!==PZ.length){var o;do{o=shuffle(PZ.map(function(_,i){return i;}));}while(o.every(function(v,i){return v===i;}));S.pz=o;save();}drawPz(false);}
+function drawPz(check){
+  $("#puzzle").innerHTML=S.pz.map(function(v,i){var c=check?(v===i?" ok":" no"):"";return '<li class="'+c+'"><span class="n">'+(i+1)+'</span><span class="t">'+esc(PZ[v])+'</span><button data-m="'+i+'" data-d="-1" aria-label="nach oben">↑</button><button data-m="'+i+'" data-d="1" aria-label="nach unten">↓</button></li>';}).join("");
+  $$("#puzzle button").forEach(function(b){b.onclick=function(){var i=+b.dataset.m,j=i+(+b.dataset.d);if(j<0||j>=S.pz.length)return;var t=S.pz[i];S.pz[i]=S.pz[j];S.pz[j]=t;save();drawPz(false);$("#pzFb").className="fb";};});
+}
+initPz(false);
+$("#pzCheck").onclick=function(){drawPz(true);var ok=S.pz.filter(function(v,i){return v===i;}).length;fb($("#pzFb"),ok===PZ.length?"good":"bad",ok===PZ.length?"Perfekt! So ist ein Motivationsbrief aufgebaut.":ok+" von "+PZ.length+" an der richtigen Stelle.");};
+$("#pzReset").onclick=function(){initPz(true);$("#pzFb").className="fb";};
+
+/* ---------- Start ---------- */
+drawHunt();
+show();
+(function wait(n){
+  if(window.claude&&window.claude.use){window.claude.use("downloads").then(function(d){dl=d;}).catch(function(){dl=null;});return;}
+  if(n<50)setTimeout(function(){wait(n+1);},200);
+})(0);
+};
+</script>
+<div id="login" class="login">
+  <form class="card" id="loginForm" autocomplete="off">
+    <div class="brand" style="padding:0 0 8px"><div class="logo">CV</div><div><h1>Mon CV – Schülerdossier</h1><small>Dein Arbeitsheft für 4 Wochen</small></div></div>
+    <label class="f" for="codeIn">Dein persönlicher Code (von deiner Lehrerin)</label>
+    <input type="text" id="codeIn" placeholder="z. B. KX7P-M3QD" maxlength="12" autocapitalize="characters" spellcheck="false" style="font-size:22px;letter-spacing:.12em;text-transform:uppercase">
+    <button class="btn" id="loginBtn" style="width:100%;margin-top:12px">Los geht's</button>
+    <div class="fb" id="loginFb"></div>
+    <p class="hint" style="margin-bottom:0">Deine Arbeit wird online gespeichert. Du kannst an jedem Computer weitermachen. Gib deinen Code niemandem und melde dich am Ende der Stunde ab.</p>
+  </form>
+</div>
+<script>
+(function(){
+"use strict";
+var CFG=null, code=null, rev=0, S=null;
+var lastJson="", ver=0, savedVer=0, inflight=false, pushT=null, retryT=null, idleT=null, conflict=false;
+var BK="moncv-backup-", SK="moncv-code";
+function $(s){return document.querySelector(s);}
+function ls(fn){try{return fn();}catch(e){return null;}}
+function rpc(name,args,opt){
+  return fetch((CFG.rest||CFG.url+"/rest/v1")+"/rpc/"+name,Object.assign({method:"POST",headers:{"apikey":CFG.key,"Content-Type":"application/json"},body:JSON.stringify(args)},opt||{}))
+  .then(function(r){return r.text().then(function(t){var j=t?JSON.parse(t):null;if(!r.ok){var e=new Error((j&&j.message)||("HTTP "+r.status));e.status=r.status;throw e;}return j;});});
+}
+function status(txt,cls){var el=$("#syncState");if(el){el.textContent=txt;el.className="sync "+(cls||"");}}
+function fbL(cls,msg){var el=$("#loginFb");el.className="fb show "+cls;el.textContent=msg;}
+function fmtCode(c){c=(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"");return c.length>4?c.slice(0,4)+"-"+c.slice(4,8):c;}
+function hhmm(){var d=new Date();return d.getHours()+":"+("0"+d.getMinutes()).slice(-2);}
+
+/* ---- local backup: only kept while there are unsaved changes ---- */
+function writeBackup(){ls(function(){localStorage.setItem(BK+code,JSON.stringify({rev:rev,data:S,t:Date.now()}));});}
+function clearBackup(c){ls(function(){localStorage.removeItem(BK+(c||code));});}
+
+/* ---- saving ---- */
+function persist(){var j=JSON.stringify(S);if(j===lastJson)return;lastJson=j;ver++;writeBackup();status("Nicht gespeichert …","busy");clearTimeout(pushT);pushT=setTimeout(push,1200);}
+function push(){
+  clearTimeout(pushT);clearTimeout(retryT);
+  if(conflict||!code||ver===savedVer)return Promise.resolve();
+  if(inflight){pushT=setTimeout(push,500);return Promise.resolve();}
+  inflight=true;var v=ver;lastJson=JSON.stringify(S);status("Speichert …","busy");
+  return rpc("student_save",{p_code:code,p_data:S,p_rev:rev}).then(function(r){
+    inflight=false;
+    if(r===null){status("Code abgelaufen","bad");showMsg("Dein Code ist abgelaufen oder wurde gelöscht. Deine letzten Änderungen konnten nicht gespeichert werden. Sprich mit deiner Lehrerin.");return;}
+    if(r===-1){conflict=true;status("Konflikt","bad");showConflict();return;}
+    rev=r;savedVer=v;
+    if(ver===savedVer){clearBackup();status("Gespeichert ✓ "+hhmm(),"ok");}
+    else{writeBackup();pushT=setTimeout(push,300);}
+  }).catch(function(e){
+    inflight=false;
+    status("Offline – wird gleich gespeichert","bad");
+    retryT=setTimeout(push,5000);
+  });
+}
+window.addEventListener("online",function(){push();});
+window.addEventListener("beforeunload",function(e){
+  if(code&&ver!==savedVer&&!conflict){
+    var body=JSON.stringify({p_code:code,p_data:S,p_rev:rev});
+    if(body.length<60000)ls(function(){fetch((CFG.rest||CFG.url+"/rest/v1")+"/rpc/student_save",{method:"POST",keepalive:true,headers:{"apikey":CFG.key,"Content-Type":"application/json"},body:body});});
+    e.preventDefault();e.returnValue="";
+  }
+});
+
+/* ---- dialogs ---- */
+function modal(html,buttons){
+  var d=document.createElement("div");d.className="modal";
+  d.innerHTML='<div class="card" style="max-width:440px">'+html+'<div class="row" style="margin-top:12px"></div></div>';
+  var row=d.querySelector(".row");
+  buttons.forEach(function(b){var el=document.createElement("button");el.className="btn"+(b.ghost?" ghost":"");el.textContent=b.t;el.onclick=function(){d.remove();b.f&&b.f();};row.appendChild(el);});
+  document.body.appendChild(d);
+}
+function showMsg(t){modal('<p style="margin-top:0;font-weight:700"></p>',[{t:"OK"}]);document.querySelector(".modal:last-child p").textContent=t;}
+function showConflict(){
+  modal('<p style="margin-top:0;font-weight:700">Dein Dossier wurde gerade auf einem anderen Computer (oder in einem anderen Tab) geändert.</p><p class="hint">Welchen Stand möchtest du behalten?</p>',[
+    {t:"Den anderen Stand laden",f:function(){clearBackup();location.reload();}},
+    {t:"Meinen Stand hier behalten",ghost:true,f:function(){rpc("student_load",{p_code:code}).then(function(r){if(!r)return;rev=r.rev;conflict=false;savedVer=-1;push();});}}
+  ]);
+}
+
+/* ---- logout / idle ---- */
+function logout(){
+  status("Speichert …","busy");
+  var p=ver===savedVer?Promise.resolve():push();
+  p.then(function(){
+    if(ver!==savedVer&&!conflict){modal('<p style="margin-top:0;font-weight:700">Deine letzten Änderungen sind noch nicht gespeichert (keine Verbindung?).</p>',[{t:"Warten",ghost:true},{t:"Trotzdem abmelden",f:doLogout}]);return;}
+    doLogout();
+  });
+}
+function doLogout(){clearBackup();ls(function(){sessionStorage.removeItem(SK);});code=null;location.hash="";location.reload();}
+function resetIdle(){clearTimeout(idleT);idleT=setTimeout(function(){push().then(function(){if(ver===savedVer)doLogout();});},30*60*1000);}
+["pointerdown","keydown","scroll"].forEach(function(ev){window.addEventListener(ev,function(){if(code)resetIdle();},{passive:true});});
+
+/* ---- login ---- */
+function enter(r){
+  code=r.code;rev=r.rev;S=r.data||{};
+  var b=ls(function(){return JSON.parse(localStorage.getItem(BK+code)||"null");});
+  var restored=false;
+  if(b&&b.data&&b.rev===r.rev){S=b.data;restored=true;}else clearBackup();
+  ls(function(){sessionStorage.setItem(SK,code);});
+  $("#login").remove();
+  $("#who").textContent=r.name+(r.klasse?" · "+r.klasse:"");
+  $("#acct").style.display="flex";
+  $("#logoutBtn").onclick=logout;
+  lastJson=restored?"":JSON.stringify(S);
+  window.__S=S;window.__persist=persist;
+  window.__startApp();
+  if(restored){ver=1;savedVer=0;push();}else status("Gespeichert ✓","ok");
+  resetIdle();
+}
+function tryLogin(c,silent){
+  c=(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(c.length<8){if(!silent)fbL("bad","Der Code hat 8 Zeichen.");return;}
+  $("#loginBtn").disabled=true;if(!silent)fbL("info","Einen Moment …");
+  rpc("student_load",{p_code:c}).then(function(r){
+    $("#loginBtn").disabled=false;
+    if(!r){ls(function(){sessionStorage.removeItem(SK);});fbL("bad","Diesen Code gibt es nicht (oder er ist abgelaufen). Tippfehler? Frag sonst deine Lehrerin.");return;}
+    enter(r);
+  }).catch(function(){$("#loginBtn").disabled=false;fbL("bad","Keine Verbindung zum Server. Prüfe das Internet und versuch es noch einmal.");});
+}
+$("#codeIn").addEventListener("input",function(){var p=this.selectionStart===this.value.length;this.value=fmtCode(this.value);});
+$("#loginForm").onsubmit=function(e){e.preventDefault();tryLogin($("#codeIn").value);};
+
+fetch("config.json",{cache:"no-store"}).then(function(r){return r.json();}).then(function(c){
+  CFG=c;
+  var saved=ls(function(){return sessionStorage.getItem(SK);});
+  if(saved){$("#codeIn").value=fmtCode(saved);tryLogin(saved,true);}else $("#codeIn").focus();
+}).catch(function(){fbL("bad","Konfiguration fehlt (config.json). Bitte der Lehrerin Bescheid sagen.");});
+})();
+</script>
+
+</body>
+</html>

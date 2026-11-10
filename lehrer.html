@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mon CV – Lehrerbereich</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1f2a33;--muted:#5d6b75;--line:#e3ded4;--accent:#0f766e;--accent-soft:#d9f0ec;--bad:#b42318;--bad-soft:#fde4e1;--good:#15803d;--good-soft:#dcf3e2;--warn:#b45309;--warn-soft:#fdf0dc}
+*{box-sizing:border-box}
+body{margin:0;font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:19px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.btn{font:inherit;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;min-height:40px}
+.btn.ghost{background:#fff;color:var(--accent)}
+.btn.small{padding:3px 10px;min-height:30px;font-size:14px}
+.btn.danger{background:#fff;color:var(--bad);border-color:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,textarea{font:inherit;font-size:16px;border:1px solid #cfc8bb;border-radius:9px;padding:8px 10px;background:#fff;color:var(--ink)}
+textarea{width:100%;min-height:150px}
+label{display:block;font-weight:700;font-size:14px;margin:8px 0 3px}
+.hint{font-size:13px;color:var(--muted)}
+.fb{margin-top:10px;padding:10px 12px;border-radius:10px;font-weight:700;display:none}
+.fb.show{display:block}.fb.good{background:var(--good-soft);color:var(--good)}.fb.bad{background:var(--bad-soft);color:var(--bad)}.fb.info{background:var(--accent-soft);color:var(--accent)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:middle;white-space:nowrap}
+th{font-size:13px;color:var(--muted)}
+td.code{font-family:ui-monospace,monospace;font-weight:700;letter-spacing:.06em}
+.slips{display:none}
+@media print{
+  body{background:#fff}
+  main>*{display:none!important}
+  .slips{display:grid!important;grid-template-columns:1fr 1fr;gap:0}
+  .slip{border:1px dashed #999;padding:14px 16px;break-inside:avoid;font-size:14px}
+  .slip b{font-size:17px}
+  .slip .c{font-family:ui-monospace,monospace;font-size:26px;font-weight:800;letter-spacing:.12em;margin:6px 0}
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>Mon CV – Lehrerbereich</h1>
+  <p class="hint" style="margin:0">Codes für die Schüler erstellen, Fortschritt sehen, am Ende alles löschen.</p>
+
+  <div class="card" id="loginCard">
+    <form id="loginForm" class="row" autocomplete="off">
+      <div style="flex:1;min-width:220px"><label for="pw">Lehrer-Passwort</label><input type="password" id="pw" style="width:100%"></div>
+      <button class="btn" style="align-self:flex-end">Anmelden</button>
+    </form>
+    <div class="fb" id="loginFb"></div>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="card">
+      <h2>Neue Schüler-Codes</h2>
+      <label for="names">Namen (ein Name pro Zeile)</label>
+      <textarea id="names" placeholder="Lisa M.&#10;Kevin S.&#10;…"></textarea>
+      <p class="hint">Vorname und Anfangsbuchstabe reichen. Der Name steht nur hier und oben im Dossier, damit der Schüler sieht, dass er im richtigen Heft ist.</p>
+      <div class="row">
+        <div><label for="klasse">Klasse</label><input id="klasse" placeholder="5P2" style="width:120px"></div>
+        <div><label for="days">Gültig (Tage)</label><input id="days" type="number" value="35" min="1" max="120" style="width:100px"></div>
+        <button class="btn" id="createBtn" style="align-self:flex-end">Codes erstellen</button>
+      </div>
+      <div class="fb" id="createFb"></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Schüler <span class="hint" id="count"></span></h2>
+        <div class="row">
+          <button class="btn ghost small" id="refreshBtn">Aktualisieren</button>
+          <button class="btn ghost small" id="printBtn">Code-Zettel drucken</button>
+          <button class="btn ghost small" id="csvBtn">Liste als CSV</button>
+          <button class="btn ghost small" id="extendBtn">Alle +7 Tage</button>
+          <button class="btn danger small" id="wipeBtn">Alle löschen</button>
+        </div>
+      </div>
+      <div class="fb" id="listFb"></div>
+      <div class="tw"><table><thead><tr><th>Name</th><th>Klasse</th><th>Code</th><th>Zuletzt gespeichert</th><th>Name im CV</th><th>Felder ausgefüllt</th><th>Löschen am</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
+      <p class="hint">Um das Dossier eines Schülers anzusehen, melde dich auf der Schülerseite mit seinem Code an (nur ansehen ändert nichts).</p>
+    </div>
+  </div>
+  <p class="hint"><a href="./">← zur Schülerseite</a></p>
+</main>
+<div class="slips" id="slips"></div>
+<script>
+(function(){
+"use strict";
+var CFG=null, PW="", ROWS=[];
+function $(s){return document.querySelector(s);}
+function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function fb(id,cls,msg){var el=$(id);el.className="fb show "+cls;el.textContent=msg;}
+function fmt(c){return c.slice(0,4)+"-"+c.slice(4);}
+function date(t,withTime){if(!t)return "–";var d=new Date(t);var s=("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear();return withTime?s+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2):s;}
+function rpc(name,args){
+  return fetch((CFG.rest||CFG.url+"/rest/v1")+"/rpc/"+name,{method:"POST",headers:{"apikey":CFG.key,"Content-Type":"application/json"},body:JSON.stringify(args)})
+  .then(function(r){return r.text().then(function(t){var j=t?JSON.parse(t):null;if(!r.ok)throw new Error((j&&j.message)||("HTTP "+r.status));return j;});});
+}
+function load(){
+  return rpc("teacher_list",{p_secret:PW}).then(function(rows){
+    ROWS=rows||[];
+    $("#count").textContent="("+ROWS.length+")";
+    $("#list").innerHTML=ROWS.length?ROWS.map(function(r){
+      return '<tr><td><b>'+esc(r.name)+'</b></td><td>'+esc(r.klasse)+'</td><td class="code">'+fmt(r.code)+'</td><td>'+date(r.updated_at,true)+'</td><td>'+esc(r.cv_name||"–")+'</td><td>'+r.cv_score+'</td><td>'+date(r.expires_at)+'</td><td><button class="btn danger small" data-del="'+r.code+'">×</button></td></tr>';
+    }).join(""):'<tr><td colspan="8" class="hint">Noch keine Schüler. Oben Namen eintragen.</td></tr>';
+    document.querySelectorAll("[data-del]").forEach(function(b){b.onclick=function(){
+      var r=ROWS.find(function(x){return x.code===b.dataset.del;});
+      if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Sicher?";return;}
+      rpc("teacher_delete",{p_secret:PW,p_code:r.code}).then(load);
+    };});
+    $("#slips").innerHTML=ROWS.map(function(r){return '<div class="slip"><b>'+esc(r.name)+'</b> '+esc(r.klasse)+'<div>Mon CV – Schülerdossier</div><div class="c">'+fmt(r.code)+'</div><div>'+esc(location.href.replace(/lehrer\.html.*$/,""))+'</div><div class="hint">Code geheim halten · gültig bis '+date(r.expires_at)+'</div></div>';}).join("");
+  });
+}
+$("#loginForm").onsubmit=function(e){e.preventDefault();PW=$("#pw").value;fb("#loginFb","info","Einen Moment …");
+  load().then(function(){try{sessionStorage.setItem("moncv-teacher",PW);}catch(e){}$("#loginCard").style.display="none";$("#app").style.display="block";})
+  .catch(function(e){fb("#loginFb","bad",e.message);});};
+$("#createBtn").onclick=function(){
+  var names=$("#names").value.split("\n").map(function(x){return x.trim();}).filter(Boolean);
+  if(!names.length){fb("#createFb","bad","Bitte mindestens einen Namen eintragen.");return;}
+  rpc("teacher_create",{p_secret:PW,p_names:names,p_klasse:$("#klasse").value,p_days:+$("#days").value||35}).then(function(r){
+    $("#names").value="";fb("#createFb","good",r.length+" Codes erstellt. Unten in der Liste, zum Verteilen: „Code-Zettel drucken“.");return load();
+  }).catch(function(e){fb("#createFb","bad",e.message);});
+};
+$("#refreshBtn").onclick=function(){load();};
+$("#printBtn").onclick=function(){window.print();};
+$("#csvBtn").onclick=function(){
+  var csv="Name;Klasse;Code;Gültig bis\n"+ROWS.map(function(r){return [r.name,r.klasse,fmt(r.code),date(r.expires_at)].map(function(x){return '"'+String(x).replace(/"/g,'""')+'"';}).join(";");}).join("\n");
+  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"}));a.download="moncv-codes.csv";a.click();
+};
+$("#extendBtn").onclick=function(){rpc("teacher_extend",{p_secret:PW,p_days:7}).then(function(n){fb("#listFb","good",n+" Dossiers um 7 Tage verlängert.");return load();}).catch(function(e){fb("#listFb","bad",e.message);});};
+$("#wipeBtn").onclick=function(){var b=this;
+  if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Wirklich ALLE Dossiers löschen? Nochmal klicken";return;}
+  rpc("teacher_delete",{p_secret:PW,p_code:"*"}).then(function(n){b.dataset.sure="";b.textContent="Alle löschen";fb("#listFb","good",n+" Dossiers gelöscht.");return load();}).catch(function(e){fb("#listFb","bad",e.message);});
+};
+fetch("config.json",{cache:"no-store"}).then(function(r){return r.json();}).then(function(c){CFG=c;
+  var pw=null;try{pw=sessionStorage.getItem("moncv-teacher");}catch(e){}
+  if(pw){$("#pw").value=pw;$("#loginForm").requestSubmit();}
+});
+})();
+</script>
+</body>
+</html>

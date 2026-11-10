@@ -1,0 +1,23 @@
+name: Daily database maintenance
+
+# Keeps the free Supabase project awake (it pauses after 7 days without
+# requests, e.g. over school holidays) and deletes expired dossiers.
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Call maintenance()
+        run: |
+          URL=$(jq -r .url config.json)
+          KEY=$(jq -r .key config.json)
+          curl -fsS -X POST "$URL/rest/v1/rpc/maintenance" \
+            -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}'
