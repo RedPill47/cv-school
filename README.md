@@ -11,7 +11,9 @@ Computer wieder da. Nach Ablauf (Standard 35 Tage) werden die Dossiers automatis
 - `index.html`: das Dossier. Speichert automatisch (1 s nach jeder Änderung), zeigt den Speicherstatus oben rechts,
   meldet sich nach 30 min ohne Aktivität ab und hinterlässt nach dem Abmelden nichts im Browser.
   Wird dasselbe Dossier an zwei Computern gleichzeitig bearbeitet, fragt es, welcher Stand bleiben soll.
-- `lehrer.html`: Lehrerbereich (Passwort).
+- `lehrer.html`: Lehrerbereich (Passwort). Unter „Kapitel freigeben“ werden Kapitel pro Klasse geöffnet oder gesperrt
+  (Schnellknöpfe „Woche 1“, „bis Woche 2“ …). Die Schülerseite fragt jede Minute nach, Änderungen wirken ohne neu anmelden.
+- Das CV-Foto bleibt nur im Browser-Tab des Schülers (sessionStorage) und wird nie online gespeichert.
 - `config.json`: Supabase-URL und öffentlicher (publishable) Schlüssel. Kein Geheimnis: die Tabellen sind per RLS gesperrt,
   Zugriff gibt es nur über die Funktionen in `supabase/schema.sql`, mit Schüler-Code bzw. Lehrer-Passwort.
 - `.github/workflows/deploy.yml`: veröffentlicht bei jedem Push auf `main` auf GitHub Pages.

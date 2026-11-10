@@ -184,6 +184,11 @@ legend{font-weight:800;padding:0 6px}
 .letter .r{text-align:right}
 .footer-nav{display:flex;justify-content:space-between;margin-top:24px;gap:10px}
 #pdfStage{position:fixed;left:-20000px;top:0}
+/* chapter locks */
+nav.chapters a.locked{color:#9aa4ab;background:#f1eee8;border-style:dashed}
+nav.chapters a.locked.active{background:#9aa4ab;color:#fff;border-color:#9aa4ab}
+.lockedbox{text-align:center;padding:40px 16px}
+.lockedbox .ic{font-size:48px;line-height:1}
 /* login + sync */
 .login{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;padding:16px;overflow:auto}
 .login .card{width:100%;max-width:420px}
@@ -204,6 +209,7 @@ legend{font-weight:800;padding:0 6px}
 </header>
 
 <main id="main">
+<div class="card lockedbox" id="lockedBox" style="display:none"><div class="ic">🔒</div><h2>Dieses Kapitel ist noch gesperrt</h2><p class="lead" style="margin:0 auto">Deine Lehrerin schaltet es frei, wenn die Klasse so weit ist. Bis dahin kannst du an den offenen Kapiteln weiterarbeiten.</p></div>
 
 <!-- K1 -->
 <section class="chap" id="c-k1">
@@ -520,7 +526,7 @@ function show(){
   var h=(location.hash||"").replace("#","");
   if(!CH.some(function(c){return c[0]===h;}))h="k1";
   cur=h;
-  $$("section.chap").forEach(function(s){s.classList.toggle("active",s.id==="c-"+h);});
+  applyLocks();
   $$("#nav a").forEach(function(a){a.classList.toggle("active",a.dataset.k===h);if(a.dataset.k===h){var nv=$("#nav");nv.scrollLeft=a.offsetLeft-nv.clientWidth/2+a.offsetWidth/2;}});
   var i=CH.findIndex(function(c){return c[0]===h;});
   $("#prevBtn").style.visibility=i>0?"visible":"hidden";
@@ -528,6 +534,15 @@ function show(){
   window.scrollTo(0,0);
   requestAnimationFrame(fitAll);
 }
+function isLocked(k){var o=window.__open;return Array.isArray(o)&&o.indexOf(k)<0;}
+function applyLocks(){
+  var lk=isLocked(cur);
+  $$("section.chap").forEach(function(s){s.classList.toggle("active",!lk&&s.id==="c-"+cur);});
+  $("#lockedBox").style.display=lk?"block":"none";
+  $$("#nav a").forEach(function(a){var l=isLocked(a.dataset.k);a.classList.toggle("locked",l);a.title=l?"Noch gesperrt":"";var i=a.querySelector(".lk");if(l&&!i)a.insertAdjacentHTML("beforeend",'<span class="lk"> 🔒</span>');if(!l&&i)i.remove();});
+  requestAnimationFrame(fitAll);
+}
+window.__applyLocks=applyLocks;
 window.addEventListener("hashchange",show);
 $("#prevBtn").onclick=function(){var i=CH.findIndex(function(c){return c[0]===cur;});if(i>0)location.hash=CH[i-1][0];};
 $("#nextBtn").onclick=function(){var i=CH.findIndex(function(c){return c[0]===cur;});if(i<CH.length-1)location.hash=CH[i+1][0];};
@@ -1008,10 +1023,22 @@ function enter(r){
   $("#acct").style.display="flex";
   $("#logoutBtn").onclick=logout;
   lastJson=restored?"":JSON.stringify(remote());
+  window.__open=r.open||null;
   window.__S=S;window.__persist=persist;
   window.__startApp();
   if(restored){ver=1;savedVer=0;push();}else status("Gespeichert ✓","ok");
   resetIdle();
+  setInterval(pollLocks,60000);
+  window.addEventListener("hashchange",function(){if(Date.now()-lastPoll>15000)pollLocks();});
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)pollLocks();});
+}
+var lastPoll=0;
+function pollLocks(){
+  if(!code)return;lastPoll=Date.now();
+  rpc("student_open",{p_code:code}).then(function(r){
+    if(!r)return;var o=r.open||null;
+    if(JSON.stringify(o)!==JSON.stringify(window.__open)){window.__open=o;window.__applyLocks&&window.__applyLocks();}
+  }).catch(function(){});
 }
 function tryLogin(c,silent){
   c=(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"");

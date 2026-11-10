@@ -66,18 +66,7 @@ begin
 end $$;
 
 -- ---------- Schüler ----------
-create or replace function public.student_load(p_code text)
-returns json language plpgsql security definer set search_path = public as $$
-declare r dossiers;
-begin
-  select * into r from dossiers where code = _norm_code(p_code) and expires_at > now();
-  if not found then
-    perform pg_sleep(0.5);
-    return null;
-  end if;
-  return json_build_object('code', r.code, 'name', r.name, 'klasse', r.klasse,
-                           'data', r.data, 'rev', r.rev, 'expires_at', r.expires_at);
-end $$;
+-- student_load: siehe unten (Kapitel freigeben)
 
 -- Speichert nur, wenn p_rev der aktuelle Stand ist (sonst war das Dossier
 -- inzwischen auf einem anderen Gerät offen). Gibt die neue rev zurück,
@@ -180,3 +169,74 @@ grant execute on function public.student_load(text), public.student_save(text, j
 -- Lehrer-Passwort setzen (Platzhalter ersetzen, dann nur diese Zeile ausführen):
 -- insert into app_config(teacher_hash) values (extensions.crypt('PASSWORT', extensions.gen_salt('bf')))
 --   on conflict (id) do update set teacher_hash = excluded.teacher_hash;
+
+-- ---------- Kapitel freigeben (pro Klasse) ----------
+-- Keine Zeile für eine Klasse = alle Kapitel offen.
+create table if not exists public.chapter_locks (
+  klasse         text primary key,
+  open_chapters  text[] not null,
+  updated_at     timestamptz not null default now()
+);
+alter table public.chapter_locks enable row level security;
+revoke all on public.chapter_locks from anon, authenticated;
+
+create or replace function public._open_for(p_klasse text)
+returns text[] language sql stable security definer set search_path = public as $$
+  select open_chapters from chapter_locks where klasse = coalesce(p_klasse, '')
+$$;
+
+create or replace function public.student_load(p_code text)
+returns json language plpgsql security definer set search_path = public as $$
+declare r dossiers;
+begin
+  select * into r from dossiers where code = _norm_code(p_code) and expires_at > now();
+  if not found then
+    perform pg_sleep(0.5);
+    return null;
+  end if;
+  return json_build_object('code', r.code, 'name', r.name, 'klasse', r.klasse,
+                           'data', r.data, 'rev', r.rev, 'expires_at', r.expires_at,
+                           'open', _open_for(r.klasse));
+end $$;
+
+-- Leichte Abfrage, die die Schülerseite jede Minute macht.
+create or replace function public.student_open(p_code text)
+returns json language plpgsql stable security definer set search_path = public as $$
+declare k text;
+begin
+  select klasse into k from dossiers where code = _norm_code(p_code) and expires_at > now();
+  if not found then return null; end if;
+  return json_build_object('open', _open_for(k));
+end $$;
+
+create or replace function public.teacher_locks_get(p_secret text)
+returns table(klasse text, open_chapters text[]) language plpgsql security definer set search_path = public as $$
+begin
+  perform _check_teacher(p_secret);
+  return query
+    select k.klasse, l.open_chapters
+      from (select d.klasse from dossiers d union select c.klasse from chapter_locks c) k
+      left join chapter_locks l on l.klasse = k.klasse
+     order by k.klasse;
+end $$;
+
+-- p_open = null hebt alle Sperren für die Klasse auf.
+create or replace function public.teacher_locks_set(p_secret text, p_klasse text, p_open text[])
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform _check_teacher(p_secret);
+  if p_open is null then
+    delete from chapter_locks where klasse = coalesce(btrim(p_klasse), '');
+    return;
+  end if;
+  if exists (select 1 from unnest(p_open) x where x !~ '^k[1-9]$') then
+    raise exception 'Unbekanntes Kapitel' using errcode = '22023';
+  end if;
+  insert into chapter_locks(klasse, open_chapters, updated_at)
+    values (coalesce(btrim(p_klasse), ''), p_open, now())
+  on conflict (klasse) do update set open_chapters = excluded.open_chapters, updated_at = now();
+end $$;
+
+revoke execute on function public._open_for(text) from public, anon, authenticated;
+grant execute on function public.student_open(text), public.teacher_locks_get(text),
+  public.teacher_locks_set(text, text, text[]) to anon, authenticated;

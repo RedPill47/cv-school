@@ -30,6 +30,12 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:middle;white-space:nowrap}
 th{font-size:13px;color:var(--muted)}
 td.code{font-family:ui-monospace,monospace;font-weight:700;letter-spacing:.06em}
+.chip{font:inherit;font-size:13px;font-weight:700;padding:5px 10px;border-radius:9px;border:1px solid #cfc8bb;background:#f1eee8;color:#8a949b;cursor:pointer}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.lockrow{padding:10px 0;border-bottom:1px solid var(--line)}
+.lockrow:last-child{border-bottom:0}
+.lockrow .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.lockrow .quick{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .slips{display:none}
 @media print{
   body{background:#fff}
@@ -69,6 +75,13 @@ td.code{font-family:ui-monospace,monospace;font-weight:700;letter-spacing:.06em}
     </div>
 
     <div class="card">
+      <h2>Kapitel freigeben</h2>
+      <p class="hint" style="margin-top:0">Grün = offen. Gesperrte Kapitel sehen die Schüler mit 🔒 und können dort nicht arbeiten. Änderungen kommen innerhalb einer Minute bei den Schülern an, ohne neu anmelden.</p>
+      <div id="locks"></div>
+      <div class="fb" id="locksFb"></div>
+    </div>
+
+    <div class="card">
       <div class="row" style="justify-content:space-between">
         <h2 style="margin:0">Schüler <span class="hint" id="count"></span></h2>
         <div class="row">
@@ -100,7 +113,34 @@ function rpc(name,args){
   return fetch((CFG.rest||CFG.url+"/rest/v1")+"/rpc/"+name,{method:"POST",headers:{"apikey":CFG.key,"Content-Type":"application/json"},body:JSON.stringify(args)})
   .then(function(r){return r.text().then(function(t){var j=t?JSON.parse(t):null;if(!r.ok)throw new Error((j&&j.message)||("HTTP "+r.status));return j;});});
 }
+var CH=[["k1","W1","1 · Was ist ein CV?"],["k2","W1","2 · Aufbau"],["k3","W1","3 · Regeln & Quiz"],["k4","W2","4 · Fehlerjagd"],["k5","HA","5 · Daten sammeln"],["k6","W3","6 · Mein CV"],["k7","W3","7 · Feedback"],["k8","W4","8 · Präsentieren"],["k9","W4","9 · Lettre de motivation"]];
+var WEEKS=[["Woche 1",["k1","k2","k3"]],["bis Woche 2",["k1","k2","k3","k4","k5"]],["bis Woche 3",["k1","k2","k3","k4","k5","k6","k7"]]];
+function loadLocks(){
+  return rpc("teacher_locks_get",{p_secret:PW}).then(function(rows){
+    rows=rows||[];
+    if(!rows.length){$("#locks").innerHTML='<p class="hint">Sobald es Schüler gibt, kannst du hier pro Klasse Kapitel sperren.</p>';return;}
+    $("#locks").innerHTML=rows.map(function(r,i){
+      var open=r.open_chapters;
+      return '<div class="lockrow" data-i="'+i+'"><b>'+(r.klasse?"Klasse "+esc(r.klasse):"Ohne Klasse")+'</b> <span class="hint">'+(open?open.length+" von 9 Kapiteln offen":"alle Kapitel offen")+'</span>'+
+        '<div class="chips">'+CH.map(function(c){var on=!open||open.indexOf(c[0])>-1;return '<button class="chip'+(on?" on":"")+'" data-k="'+c[0]+'">'+c[1]+" "+esc(c[2])+'</button>';}).join("")+'</div>'+
+        '<div class="quick"><span class="hint">Schnell:</span>'+WEEKS.map(function(w,j){return '<button class="btn ghost small" data-w="'+j+'">'+w[0]+'</button>';}).join("")+'<button class="btn ghost small" data-all="1">Alle offen</button><button class="btn ghost small" data-none="1">Alle gesperrt</button></div></div>';
+    }).join("");
+    document.querySelectorAll(".lockrow").forEach(function(row){
+      var r=rows[+row.dataset.i];
+      function set(open){rpc("teacher_locks_set",{p_secret:PW,p_klasse:r.klasse,p_open:open}).then(function(){fb("#locksFb","good","Gespeichert: "+(r.klasse?"Klasse "+r.klasse:"Ohne Klasse")+".");return loadLocks();}).catch(function(e){fb("#locksFb","bad",e.message);});}
+      row.querySelectorAll("[data-k]").forEach(function(b){b.onclick=function(){
+        var open=r.open_chapters?r.open_chapters.slice():CH.map(function(c){return c[0];});
+        var i=open.indexOf(b.dataset.k);if(i>-1)open.splice(i,1);else open.push(b.dataset.k);
+        set(open.length===CH.length?null:CH.map(function(c){return c[0];}).filter(function(k){return open.indexOf(k)>-1;}));
+      };});
+      row.querySelectorAll("[data-w]").forEach(function(b){b.onclick=function(){set(WEEKS[+b.dataset.w][1]);};});
+      row.querySelector("[data-all]").onclick=function(){set(null);};
+      row.querySelector("[data-none]").onclick=function(){set([]);};
+    });
+  });
+}
 function load(){
+  loadLocks().catch(function(e){fb("#locksFb","bad",e.message);});
   return rpc("teacher_list",{p_secret:PW}).then(function(rows){
     ROWS=rows||[];
     $("#count").textContent="("+ROWS.length+")";
