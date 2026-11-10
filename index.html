@@ -342,7 +342,7 @@ legend{font-weight:800;padding:0 6px}
 <section class="chap" id="c-k6">
   <div class="kicker">Woche 3 · Kapitel 6</div>
   <h2>Mein CV</h2>
-  <p class="lead">Fülle die Felder aus. Rechts siehst du sofort deinen CV. Der Assistent zeigt dir, was noch fehlt. Alles wird automatisch online gespeichert.</p>
+  <p class="lead">Fülle die Felder aus. Rechts siehst du sofort deinen CV. Der Assistent zeigt dir, was noch fehlt. Alles wird automatisch online gespeichert, außer dem Foto.</p>
   <div class="row" style="margin-bottom:12px">
     <button class="btn" id="pdfBtn">Als PDF herunterladen</button>
     <label class="switch"><input type="checkbox" id="hideContact"> Kontaktdaten verbergen (für die Präsentation)</label>
@@ -373,6 +373,7 @@ legend{font-weight:800;padding:0 6px}
           <div><label class="f">Permis de conduire</label><input type="text" data-cv="permis" placeholder="/"></div>
         </div>
         <label class="f">Photo (freiwillig, nur Passfoto)</label>
+        <p class="hint" style="margin:0 0 6px">Das Foto bleibt nur auf diesem Computer und wird nicht online gespeichert. Nach dem Abmelden ist es weg: Füge es vor dem PDF-Download wieder hinzu.</p>
         <div class="row"><input type="file" accept="image/*" id="photoIn" style="max-width:260px"><button class="btn ghost small" id="photoDel" type="button">Foto entfernen</button></div>
       </fieldset>
       <fieldset><legend>2 · Études et formations</legend>
@@ -917,7 +918,10 @@ show();
 "use strict";
 var CFG=null, code=null, rev=0, S=null;
 var lastJson="", ver=0, savedVer=0, inflight=false, pushT=null, retryT=null, idleT=null, conflict=false;
-var BK="moncv-backup-", SK="moncv-code";
+var BK="moncv-backup-", SK="moncv-code", PK="moncv-photo-";
+/* the photo never leaves this tab: kept in sessionStorage, stripped before saving */
+function remote(){var c=S.cv;if(!c||!c.photo)return S;var o=Object.assign({},S);o.cv=Object.assign({},c,{photo:""});return o;}
+function keepPhoto(){ls(function(){var ph=S.cv&&S.cv.photo;if(ph)sessionStorage.setItem(PK+code,ph);else sessionStorage.removeItem(PK+code);});}
 function $(s){return document.querySelector(s);}
 function ls(fn){try{return fn();}catch(e){return null;}}
 function rpc(name,args,opt){
@@ -930,17 +934,17 @@ function fmtCode(c){c=(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"");return c.le
 function hhmm(){var d=new Date();return d.getHours()+":"+("0"+d.getMinutes()).slice(-2);}
 
 /* ---- local backup: only kept while there are unsaved changes ---- */
-function writeBackup(){ls(function(){localStorage.setItem(BK+code,JSON.stringify({rev:rev,data:S,t:Date.now()}));});}
+function writeBackup(){ls(function(){localStorage.setItem(BK+code,JSON.stringify({rev:rev,data:remote(),t:Date.now()}));});}
 function clearBackup(c){ls(function(){localStorage.removeItem(BK+(c||code));});}
 
 /* ---- saving ---- */
-function persist(){var j=JSON.stringify(S);if(j===lastJson)return;lastJson=j;ver++;writeBackup();status("Nicht gespeichert …","busy");clearTimeout(pushT);pushT=setTimeout(push,1200);}
+function persist(){keepPhoto();var j=JSON.stringify(remote());if(j===lastJson)return;lastJson=j;ver++;writeBackup();status("Nicht gespeichert …","busy");clearTimeout(pushT);pushT=setTimeout(push,1200);}
 function push(){
   clearTimeout(pushT);clearTimeout(retryT);
   if(conflict||!code||ver===savedVer)return Promise.resolve();
   if(inflight){pushT=setTimeout(push,500);return Promise.resolve();}
-  inflight=true;var v=ver;lastJson=JSON.stringify(S);status("Speichert …","busy");
-  return rpc("student_save",{p_code:code,p_data:S,p_rev:rev}).then(function(r){
+  inflight=true;var v=ver;var payload=remote();lastJson=JSON.stringify(payload);status("Speichert …","busy");
+  return rpc("student_save",{p_code:code,p_data:payload,p_rev:rev}).then(function(r){
     inflight=false;
     if(r===null){status("Code abgelaufen","bad");showMsg("Dein Code ist abgelaufen oder wurde gelöscht. Deine letzten Änderungen konnten nicht gespeichert werden. Sprich mit deiner Lehrerin.");return;}
     if(r===-1){conflict=true;status("Konflikt","bad");showConflict();return;}
@@ -956,7 +960,7 @@ function push(){
 window.addEventListener("online",function(){push();});
 window.addEventListener("beforeunload",function(e){
   if(code&&ver!==savedVer&&!conflict){
-    var body=JSON.stringify({p_code:code,p_data:S,p_rev:rev});
+    var body=JSON.stringify({p_code:code,p_data:remote(),p_rev:rev});
     if(body.length<60000)ls(function(){fetch((CFG.rest||CFG.url+"/rest/v1")+"/rpc/student_save",{method:"POST",keepalive:true,headers:{"apikey":CFG.key,"Content-Type":"application/json"},body:body});});
     e.preventDefault();e.returnValue="";
   }
@@ -987,7 +991,7 @@ function logout(){
     doLogout();
   });
 }
-function doLogout(){clearBackup();ls(function(){sessionStorage.removeItem(SK);});code=null;location.hash="";location.reload();}
+function doLogout(){clearBackup();ls(function(){sessionStorage.removeItem(SK);sessionStorage.removeItem(PK+code);});code=null;location.hash="";location.reload();}
 function resetIdle(){clearTimeout(idleT);idleT=setTimeout(function(){push().then(function(){if(ver===savedVer)doLogout();});},30*60*1000);}
 ["pointerdown","keydown","scroll"].forEach(function(ev){window.addEventListener(ev,function(){if(code)resetIdle();},{passive:true});});
 
@@ -997,12 +1001,13 @@ function enter(r){
   var b=ls(function(){return JSON.parse(localStorage.getItem(BK+code)||"null");});
   var restored=false;
   if(b&&b.data&&b.rev===r.rev){S=b.data;restored=true;}else clearBackup();
+  if(S.cv){var ph=ls(function(){return sessionStorage.getItem(PK+code);});S.cv.photo=ph||"";}
   ls(function(){sessionStorage.setItem(SK,code);});
   $("#login").remove();
   $("#who").textContent=r.name+(r.klasse?" · "+r.klasse:"");
   $("#acct").style.display="flex";
   $("#logoutBtn").onclick=logout;
-  lastJson=restored?"":JSON.stringify(S);
+  lastJson=restored?"":JSON.stringify(remote());
   window.__S=S;window.__persist=persist;
   window.__startApp();
   if(restored){ver=1;savedVer=0;push();}else status("Gespeichert ✓","ok");

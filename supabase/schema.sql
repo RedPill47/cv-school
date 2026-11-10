@@ -89,7 +89,8 @@ begin
   if pg_column_size(p_data) > 600000 then
     raise exception 'Dossier zu groß' using errcode = '54000';
   end if;
-  update dossiers set data = p_data, rev = rev + 1, updated_at = now()
+  -- Das Foto wird nie gespeichert (bleibt nur im Browser des Schülers).
+  update dossiers set data = p_data #- '{cv,photo}', rev = rev + 1, updated_at = now()
    where code = _norm_code(p_code) and expires_at > now() and rev = p_rev
   returning rev into new_rev;
   if found then return new_rev; end if;
