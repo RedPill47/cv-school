@@ -20,9 +20,14 @@ Computer wieder da. Nach Ablauf (Standard 35 Tage) werden die Dossiers automatis
 - `.github/workflows/maintenance.yml`: täglich: löscht abgelaufene Dossiers und hält das kostenlose Supabase-Projekt wach
   (es pausiert sonst nach 7 Tagen ohne Zugriff, z. B. in den Ferien).
 
-## Lehrer-Passwort ändern
-Im Supabase SQL-Editor:
+## Lehrer-Konten
+Jede Lehrerin hat ein eigenes Passwort und sieht nur ihre eigenen Klassen, Schüler und Kapitel-Sperren.
+Konten verwalten im Supabase SQL-Editor (Projekt `cv-school`):
 ```sql
-insert into app_config(teacher_hash) values (extensions.crypt('NEUES-PASSWORT', extensions.gen_salt('bf')))
-  on conflict (id) do update set teacher_hash = excluded.teacher_hash;
+-- neues Konto
+insert into teachers(name, pw_hash) values ('Name', extensions.crypt('PASSWORT', extensions.gen_salt('bf')));
+-- Passwort ändern
+update teachers set pw_hash = extensions.crypt('NEUES-PASSWORT', extensions.gen_salt('bf')) where name = 'Name';
+-- Konto löschen (löscht auch alle seine Schüler-Dossiers)
+delete from teachers where name = 'Name';
 ```

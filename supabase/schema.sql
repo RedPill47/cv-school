@@ -1,19 +1,30 @@
--- Mon CV – Schülerdossier: Datenbank für Supabase
--- Einmal im Supabase SQL-Editor ausführen (oder per MCP apply_migration).
+-- Mon CV – Schülerdossier: Datenbank für Supabase (Neuinstallation).
+-- Bestehende Datenbank aktualisieren: Dateien in supabase/migrations/ der Reihe nach,
+-- danach den Teil "Funktionen" dieser Datei.
 --
 -- Sicherheitsmodell:
---   * Die Tabelle ist per RLS komplett gesperrt (keine Policies). Der öffentliche
---     Schlüssel im Browser kann sie weder lesen noch auflisten.
---   * Schüler kommen nur über student_load / student_save an IHRE Zeile, und nur mit
---     ihrem persönlichen Code (8 Zeichen, ca. 850 Milliarden Möglichkeiten).
---   * Die Lehrerin verwaltet Codes über teacher_* Funktionen, geschützt durch ein
---     Lehrer-Passwort (nur als bcrypt-Hash gespeichert).
---   * Jede Zeile hat ein Ablaufdatum (Standard 35 Tage) und wird danach gelöscht.
+--   * Alle Tabellen sind per RLS gesperrt (keine Policies). Der öffentliche Schlüssel
+--     im Browser kann sie weder lesen noch auflisten.
+--   * Schüler kommen nur über student_* Funktionen an IHRE Zeile, mit ihrem
+--     persönlichen Code (8 Zeichen, ca. 850 Milliarden Möglichkeiten).
+--   * Jede Lehrerin hat ein eigenes Konto (Passwort, nur als bcrypt-Hash gespeichert)
+--     und sieht nur ihre eigenen Klassen und Schüler.
+--   * Jedes Dossier hat ein Ablaufdatum (Standard 35 Tage) und wird danach gelöscht.
+--   * Das CV-Foto wird nie gespeichert (bleibt im Browser des Schülers).
 
 create extension if not exists pgcrypto with schema extensions;
 
+-- ---------- Tabellen ----------
+create table if not exists public.teachers (
+  id          serial primary key,
+  name        text not null,
+  pw_hash     text not null,
+  created_at  timestamptz not null default now()
+);
+
 create table if not exists public.dossiers (
   code        text primary key,
+  teacher_id  integer not null references public.teachers(id) on delete cascade,
   name        text not null,
   klasse      text not null default '',
   data        jsonb not null default '{}'::jsonb,
@@ -22,31 +33,41 @@ create table if not exists public.dossiers (
   updated_at  timestamptz,
   expires_at  timestamptz not null default now() + interval '35 days'
 );
-alter table public.dossiers enable row level security;
+create index if not exists dossiers_teacher_idx on public.dossiers(teacher_id, klasse);
 
-create table if not exists public.app_config (
-  id            boolean primary key default true check (id),
-  teacher_hash  text not null
+-- Kapitel freigeben, pro Lehrerin und Klasse. Keine Zeile = alle Kapitel offen.
+create table if not exists public.chapter_locks (
+  teacher_id     integer not null references public.teachers(id) on delete cascade,
+  klasse         text not null,
+  open_chapters  text[] not null,
+  updated_at     timestamptz not null default now(),
+  primary key (teacher_id, klasse)
 );
-alter table public.app_config enable row level security;
 
-revoke all on public.dossiers, public.app_config from anon, authenticated;
+alter table public.teachers enable row level security;
+alter table public.dossiers enable row level security;
+alter table public.chapter_locks enable row level security;
+revoke all on public.teachers, public.dossiers, public.chapter_locks from anon, authenticated;
 
--- ---------- Hilfsfunktionen ----------
+-- ---------- Funktionen ----------
 create or replace function public._norm_code(p text)
 returns text language sql immutable set search_path = public as $$
   select upper(regexp_replace(coalesce(p, ''), '[^A-Za-z0-9]', '', 'g'))
 $$;
 
-create or replace function public._check_teacher(p_secret text)
-returns void language plpgsql security definer set search_path = public, extensions as $$
+-- Gibt die Konto-ID zum Passwort zurück, sonst Fehler.
+create or replace function public._teacher_id(p_secret text)
+returns integer language plpgsql security definer set search_path = public, extensions as $$
+declare tid integer;
 begin
-  if p_secret is null or not exists (
-    select 1 from app_config where teacher_hash = crypt(p_secret, teacher_hash)
-  ) then
+  if p_secret is not null and p_secret <> '' then
+    select id into tid from teachers where pw_hash = crypt(p_secret, pw_hash) limit 1;
+  end if;
+  if tid is null then
     perform pg_sleep(1);  -- bremst Raten
     raise exception 'Falsches Lehrer-Passwort' using errcode = '28P01';
   end if;
+  return tid;
 end $$;
 
 create or replace function public._new_code()
@@ -65,8 +86,41 @@ begin
   return c;
 end $$;
 
--- ---------- Schüler ----------
--- student_load: siehe unten (Kapitel freigeben)
+create or replace function public._open_for(p_teacher integer, p_klasse text)
+returns text[] language sql stable security definer set search_path = public as $$
+  select open_chapters from chapter_locks where teacher_id = p_teacher and klasse = coalesce(p_klasse, '')
+$$;
+
+create or replace function public._drop_empty_classes()
+returns void language sql security definer set search_path = public as $$
+  delete from chapter_locks c
+   where not exists (select 1 from dossiers d where d.teacher_id = c.teacher_id and d.klasse = c.klasse)
+$$;
+
+-- ----- Schüler -----
+create or replace function public.student_load(p_code text)
+returns json language plpgsql security definer set search_path = public as $$
+declare r dossiers;
+begin
+  select * into r from dossiers where code = _norm_code(p_code) and expires_at > now();
+  if not found then
+    perform pg_sleep(0.5);
+    return null;
+  end if;
+  return json_build_object('code', r.code, 'name', r.name, 'klasse', r.klasse,
+                           'data', r.data, 'rev', r.rev, 'expires_at', r.expires_at,
+                           'open', _open_for(r.teacher_id, r.klasse));
+end $$;
+
+-- Leichte Abfrage, die die Schülerseite jede Minute macht.
+create or replace function public.student_open(p_code text)
+returns json language plpgsql stable security definer set search_path = public as $$
+declare r dossiers;
+begin
+  select * into r from dossiers where code = _norm_code(p_code) and expires_at > now();
+  if not found then return null; end if;
+  return json_build_object('open', _open_for(r.teacher_id, r.klasse));
+end $$;
 
 -- Speichert nur, wenn p_rev der aktuelle Stand ist (sonst war das Dossier
 -- inzwischen auf einem anderen Gerät offen). Gibt die neue rev zurück,
@@ -89,18 +143,24 @@ begin
   return null;
 end $$;
 
--- ---------- Lehrerin ----------
+-- ----- Lehrerin (alles nur für das eigene Konto) -----
+create or replace function public.teacher_me(p_secret text)
+returns json language plpgsql security definer set search_path = public as $$
+declare tid integer := _teacher_id(p_secret);
+begin
+  return (select json_build_object('id', id, 'name', name) from teachers where id = tid);
+end $$;
+
 create or replace function public.teacher_create(p_secret text, p_names text[], p_klasse text default '', p_days integer default 35)
 returns table(code text, name text) language plpgsql security definer set search_path = public as $$
-declare n text;
+declare tid integer := _teacher_id(p_secret); n text;
 begin
-  perform _check_teacher(p_secret);
   foreach n in array p_names loop
     n := btrim(n);
     continue when n = '';
     code := _new_code(); name := n;
-    insert into dossiers(code, name, klasse, expires_at)
-      values (code, name, coalesce(btrim(p_klasse), ''), now() + make_interval(days => greatest(1, least(p_days, 120))));
+    insert into dossiers(code, teacher_id, name, klasse, expires_at)
+      values (code, tid, name, coalesce(btrim(p_klasse), ''), now() + make_interval(days => greatest(1, least(p_days, 120))));
     return next;
   end loop;
 end $$;
@@ -109,47 +169,75 @@ create or replace function public.teacher_list(p_secret text)
 returns table(code text, name text, klasse text, created_at timestamptz, updated_at timestamptz,
               expires_at timestamptz, cv_name text, cv_score integer, bytes integer)
 language plpgsql security definer set search_path = public as $$
+declare tid integer := _teacher_id(p_secret);
 begin
-  perform _check_teacher(p_secret);
   return query
     select d.code, d.name, d.klasse, d.created_at, d.updated_at, d.expires_at,
            btrim(coalesce(d.data#>>'{cv,prenom}', '') || ' ' || coalesce(d.data#>>'{cv,nom}', '')),
            (select count(*)::int from jsonb_each(coalesce(d.data->'f', '{}'::jsonb)) e where btrim(e.value #>> '{}') <> ''),
            pg_column_size(d.data)
-      from dossiers d order by d.klasse, d.name;
+      from dossiers d where d.teacher_id = tid order by d.klasse, d.name;
 end $$;
 
 create or replace function public.teacher_get(p_secret text, p_code text)
 returns json language plpgsql security definer set search_path = public as $$
+declare tid integer := _teacher_id(p_secret);
 begin
-  perform _check_teacher(p_secret);
-  return (select json_build_object('code', code, 'name', name, 'klasse', klasse, 'data', data, 'rev', rev)
-            from dossiers where code = _norm_code(p_code));
+  return (select json_build_object('code', d.code, 'name', d.name, 'klasse', d.klasse, 'data', d.data, 'rev', d.rev)
+            from dossiers d where d.code = _norm_code(p_code) and d.teacher_id = tid);
 end $$;
 
 create or replace function public.teacher_extend(p_secret text, p_days integer)
 returns integer language plpgsql security definer set search_path = public as $$
-declare n integer;
+declare tid integer := _teacher_id(p_secret); n integer;
 begin
-  perform _check_teacher(p_secret);
-  update dossiers set expires_at = expires_at + make_interval(days => greatest(1, least(p_days, 60)));
+  update dossiers set expires_at = expires_at + make_interval(days => greatest(1, least(p_days, 60)))
+   where teacher_id = tid;
   get diagnostics n = row_count; return n;
 end $$;
 
+-- p_code = '*' löscht alle Dossiers DIESES Kontos.
 create or replace function public.teacher_delete(p_secret text, p_code text)
 returns integer language plpgsql security definer set search_path = public as $$
-declare n integer;
+declare tid integer := _teacher_id(p_secret); n integer;
 begin
-  perform _check_teacher(p_secret);
-  if p_code is null or p_code = '*' then delete from dossiers;
-  else delete from dossiers where code = _norm_code(p_code); end if;
+  if p_code is null or p_code = '*' then delete from dossiers where teacher_id = tid;
+  else delete from dossiers where code = _norm_code(p_code) and teacher_id = tid; end if;
   get diagnostics n = row_count;
-  -- Klassen ohne Schüler verschwinden samt ihren Kapitel-Einstellungen.
-  delete from chapter_locks c where not exists (select 1 from dossiers d where d.klasse = c.klasse);
+  perform _drop_empty_classes();  -- Klassen ohne Schüler verschwinden
   return n;
 end $$;
 
--- ---------- Wartung (täglich von GitHub Actions aufgerufen) ----------
+create or replace function public.teacher_locks_get(p_secret text)
+returns table(klasse text, open_chapters text[]) language plpgsql security definer set search_path = public as $$
+declare tid integer := _teacher_id(p_secret);
+begin
+  return query
+    select k.klasse, l.open_chapters
+      from (select d.klasse from dossiers d where d.teacher_id = tid
+            union select c.klasse from chapter_locks c where c.teacher_id = tid) k
+      left join chapter_locks l on l.teacher_id = tid and l.klasse = k.klasse
+     order by k.klasse;
+end $$;
+
+-- p_open = null hebt alle Sperren für die Klasse auf.
+create or replace function public.teacher_locks_set(p_secret text, p_klasse text, p_open text[])
+returns void language plpgsql security definer set search_path = public as $$
+declare tid integer := _teacher_id(p_secret);
+begin
+  if p_open is null then
+    delete from chapter_locks where teacher_id = tid and klasse = coalesce(btrim(p_klasse), '');
+    return;
+  end if;
+  if exists (select 1 from unnest(p_open) x where x !~ '^k[1-9]$') then
+    raise exception 'Unbekanntes Kapitel' using errcode = '22023';
+  end if;
+  insert into chapter_locks(teacher_id, klasse, open_chapters, updated_at)
+    values (tid, coalesce(btrim(p_klasse), ''), p_open, now())
+  on conflict (teacher_id, klasse) do update set open_chapters = excluded.open_chapters, updated_at = now();
+end $$;
+
+-- ----- Wartung (täglich von GitHub Actions aufgerufen) -----
 -- Hält das kostenlose Supabase-Projekt wach (pausiert sonst nach 7 Tagen ohne
 -- Zugriff) und löscht abgelaufene Dossiers.
 create or replace function public.maintenance()
@@ -158,89 +246,24 @@ declare n integer;
 begin
   delete from dossiers where expires_at <= now();
   get diagnostics n = row_count;
-  delete from chapter_locks c where not exists (select 1 from dossiers d where d.klasse = c.klasse);
+  perform _drop_empty_classes();
   return json_build_object('deleted', n, 'active', (select count(*) from dossiers));
 end $$;
 
 -- Nur diese Funktionen sind von außen aufrufbar.
 revoke execute on all functions in schema public from public, anon, authenticated;
-grant execute on function public.student_load(text), public.student_save(text, jsonb, integer),
+grant execute on function public.student_load(text), public.student_open(text),
+  public.student_save(text, jsonb, integer), public.teacher_me(text),
   public.teacher_create(text, text[], text, integer), public.teacher_list(text),
   public.teacher_get(text, text), public.teacher_extend(text, integer),
-  public.teacher_delete(text, text), public.maintenance()
+  public.teacher_delete(text, text), public.teacher_locks_get(text),
+  public.teacher_locks_set(text, text, text[]), public.maintenance()
   to anon, authenticated;
 
--- Lehrer-Passwort setzen (Platzhalter ersetzen, dann nur diese Zeile ausführen):
--- insert into app_config(teacher_hash) values (extensions.crypt('PASSWORT', extensions.gen_salt('bf')))
---   on conflict (id) do update set teacher_hash = excluded.teacher_hash;
-
--- ---------- Kapitel freigeben (pro Klasse) ----------
--- Keine Zeile für eine Klasse = alle Kapitel offen.
-create table if not exists public.chapter_locks (
-  klasse         text primary key,
-  open_chapters  text[] not null,
-  updated_at     timestamptz not null default now()
-);
-alter table public.chapter_locks enable row level security;
-revoke all on public.chapter_locks from anon, authenticated;
-
-create or replace function public._open_for(p_klasse text)
-returns text[] language sql stable security definer set search_path = public as $$
-  select open_chapters from chapter_locks where klasse = coalesce(p_klasse, '')
-$$;
-
-create or replace function public.student_load(p_code text)
-returns json language plpgsql security definer set search_path = public as $$
-declare r dossiers;
-begin
-  select * into r from dossiers where code = _norm_code(p_code) and expires_at > now();
-  if not found then
-    perform pg_sleep(0.5);
-    return null;
-  end if;
-  return json_build_object('code', r.code, 'name', r.name, 'klasse', r.klasse,
-                           'data', r.data, 'rev', r.rev, 'expires_at', r.expires_at,
-                           'open', _open_for(r.klasse));
-end $$;
-
--- Leichte Abfrage, die die Schülerseite jede Minute macht.
-create or replace function public.student_open(p_code text)
-returns json language plpgsql stable security definer set search_path = public as $$
-declare k text;
-begin
-  select klasse into k from dossiers where code = _norm_code(p_code) and expires_at > now();
-  if not found then return null; end if;
-  return json_build_object('open', _open_for(k));
-end $$;
-
-create or replace function public.teacher_locks_get(p_secret text)
-returns table(klasse text, open_chapters text[]) language plpgsql security definer set search_path = public as $$
-begin
-  perform _check_teacher(p_secret);
-  return query
-    select k.klasse, l.open_chapters
-      from (select d.klasse from dossiers d union select c.klasse from chapter_locks c) k
-      left join chapter_locks l on l.klasse = k.klasse
-     order by k.klasse;
-end $$;
-
--- p_open = null hebt alle Sperren für die Klasse auf.
-create or replace function public.teacher_locks_set(p_secret text, p_klasse text, p_open text[])
-returns void language plpgsql security definer set search_path = public as $$
-begin
-  perform _check_teacher(p_secret);
-  if p_open is null then
-    delete from chapter_locks where klasse = coalesce(btrim(p_klasse), '');
-    return;
-  end if;
-  if exists (select 1 from unnest(p_open) x where x !~ '^k[1-9]$') then
-    raise exception 'Unbekanntes Kapitel' using errcode = '22023';
-  end if;
-  insert into chapter_locks(klasse, open_chapters, updated_at)
-    values (coalesce(btrim(p_klasse), ''), p_open, now())
-  on conflict (klasse) do update set open_chapters = excluded.open_chapters, updated_at = now();
-end $$;
-
-revoke execute on function public._open_for(text) from public, anon, authenticated;
-grant execute on function public.student_open(text), public.teacher_locks_get(text),
-  public.teacher_locks_set(text, text, text[]) to anon, authenticated;
+-- ---------- Lehrer-Konten verwalten (im Supabase SQL-Editor) ----------
+-- Neues Konto:
+--   insert into teachers(name, pw_hash) values ('Name', extensions.crypt('PASSWORT', extensions.gen_salt('bf')));
+-- Passwort ändern:
+--   update teachers set pw_hash = extensions.crypt('NEUES-PASSWORT', extensions.gen_salt('bf')) where name = 'Name';
+-- Konto löschen (löscht auch alle seine Schüler-Dossiers):
+--   delete from teachers where name = 'Name';
